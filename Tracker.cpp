@@ -1,0 +1,392 @@
+#include <Arduino.h>
+#include "Tracker.h"
+#include "Voice.h"
+
+Tracker::Tracker() {
+  patternLength = 32;
+  isPlaying = true;
+  bpms[0] = 31000;
+  bpms[1] = 31001;
+  bpms[2] = 31002;
+  bpms[3] = 31003;
+  SetBPM(0);
+
+  for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 256; i++) {
+      tracks[j][i] = 0;
+    }
+  }
+
+  ClearAll(0);
+}
+
+int Tracker::UpdateTracker() {
+  float curTime = millis();
+  float delta = curTime - lastMillis;
+  tempoBlink = 0;
+  lastMillis = curTime;
+
+  float dbps = delta * bps;
+  beatTime += dbps;
+  noteTime += dbps;
+  if (beatTime > 1000) {
+    beatTime -= 1000;
+    barCount++;
+    tempoBlink = 20;
+    if (barCount > 7) {
+      tempoBlink = 100;
+      barCount = 0;
+    }
+  }
+
+  if (noteTime > 250) {
+    noteTime -= 250;
+    trackIndex++;
+
+    if (trackIndex >= patternLength * (currentPattern + 1)) {
+      trackIndex = patternLength * (currentPattern + 0);
+      if (allPatternPlay) {
+        currentPattern++;
+        if (currentPattern > 3) {
+          currentPattern -= 4;
+        }
+        trackIndex = patternLength * (currentPattern + 0);
+      }
+    }
+
+    int trackIndexBehind = trackIndex - 1;
+    if (trackIndexBehind < patternLength * (currentPattern + 0)) {
+      trackIndexBehind = patternLength * (currentPattern + 1) + trackIndexBehind;
+    }
+
+    for (int i = 0; i < 4; i++) {
+      int note = tracks[i][trackIndexBehind];
+      int optOctave = trackOctaves[i][trackIndexBehind];
+      int optInstrument = trackInstruments[i][trackIndexBehind];
+
+      if (note > 0) {
+        heldNotes[i] = note;
+        heldInsturments[i] = currentVoice;
+        voices[i].SetNote(note - 1, false, optOctave, optInstrument);
+      }
+    }
+  }
+
+  sample = 0;
+
+  for (int i = 0; i < 4; i++) {
+    voices[i].bps = bps;
+    int samp = voices[i].UpdateVoice() / (3 + masterVolume * 5);
+    sample += samp;
+    lastSamples[i] = samp;
+  }
+
+  return 0;
+}
+
+void Tracker::BuildOLEDHintString(String string) {
+  hintTime = 120;
+  string.toCharArray(hint, 15);
+}
+
+void Tracker::SetCommand(char command, int val) {
+  switch (command) {
+    case 'T':
+      SetTrackNum(val);
+      BuildOLEDHintString(String("Track: " + String(val + 1)));
+      break;
+    case 'B':
+      SetBPM(val);
+      BuildOLEDHintString(String("BPM: " + String(bpms[val])));
+      break;
+    case 'N':
+      if (!pressedOnce) {
+        noteTime = 0;
+        beatTime = 0;
+        trackIndex = 0;
+      }
+      pressedOnce = true;
+      SetNote(val, selectedTrack);
+      break;
+    case 'O':
+      SetOctave(val);
+      BuildOLEDHintString(String("Octave: " + String(val)));
+      break;
+    case 'L':
+      SetEnvelopeLength(val);
+      BuildOLEDHintString(String("Note Len: " + String(val + 1)));
+      break;
+    case 'E':
+      SetEnvelopeNum(val);
+      switch (val) {
+        case 0:
+          BuildOLEDHintString(String("Fade Out"));
+          break;
+        case 1:
+          BuildOLEDHintString(String("Fade In"));
+          break;
+        case 2:
+          BuildOLEDHintString(String("No Fade"));
+          break;
+        case 3:
+          BuildOLEDHintString(String("Loop"));
+          break;
+      }
+      break;
+    case 'V':
+      if (val == 3) {
+        BuildOLEDHintString(String("Overdrive"));
+      }
+      SetVolume(val);
+      BuildOLEDHintString(String("Volume: " + String(val + 1)));
+      break;
+    case 'D':
+      SetEffect(val + 4);
+      switch (val) {
+        case 0:
+          BuildOLEDHintString(String("Echo: " + String(voices[selectedTrack].delayMult)));
+          break;
+        case 1:
+          BuildOLEDHintString(String("ArpChord: " + String(voices[selectedTrack].chordMult)));
+          break;
+        case 2:
+          BuildOLEDHintString(String("Whoosh: " + String(voices[selectedTrack].whooshMult)));
+          break;
+        case 3:
+          BuildOLEDHintString(String("Pitchbend: " + String(voices[selectedTrack].pitchMult)));
+          break;
+      }
+      break;
+    case 'A':
+      SetEffect(val);
+      switch (val) {
+        case 0:
+          BuildOLEDHintString(String("Effects Off"));
+          break;
+        case 1:
+          BuildOLEDHintString(String("Low Pass: " + String(voices[selectedTrack].lowPassMult)));
+          break;
+        case 2:
+          BuildOLEDHintString(String("Retrig: " + String(voices[selectedTrack].reverbMult)));
+          break;
+        case 3:
+          BuildOLEDHintString(String("Wobble: " + String(voices[selectedTrack].phaserMult)));
+          break;
+      }
+      break;
+    case '^':
+      ClearTrackNum(val);
+      BuildOLEDHintString(String("Clr Track: " + String(val + 1)));
+      break;
+    case '$':
+      SetPatternNum(val);
+      BuildOLEDHintString(String("Pattern: " + String(val + 1)));
+      break;
+    case '#':
+      ClearPatternNum(val);
+      BuildOLEDHintString(String("Clr Pattern: " + String(val + 1)));
+      break;
+    case 'X':
+      ClearAll(val);
+      BuildOLEDHintString(String("New Song: " + String((32 * (val + 1)))));
+      break;
+    case 'P':
+      BuildOLEDHintString(String("Recording: " + String((bool)isPlaying)));
+      TogglePlayStop();
+      break;
+    case 'I':
+      currentVoice = val;
+      if (val > 1) {
+        BuildOLEDHintString(String("Instrument: " + String(val)));
+        String("INS" + String(val)).toCharArray(oledInstString, 8);
+      } else if (val == 1) {
+        BuildOLEDHintString(String("SFX Bank"));
+        String("SFX").toCharArray(oledInstString, 6);
+      } else {
+        BuildOLEDHintString(String("Drum Bank"));
+        String("DRUM").toCharArray(oledInstString, 6);
+      }
+      break;
+    case 'H':
+      masterVolume++;
+      if (masterVolume > 1)
+        masterVolume = 0;
+
+      BuildOLEDHintString(String("Mstr Volume: " + String(2 - masterVolume)));
+      break;
+    case 'K':
+
+      break;
+    case 'C':
+      allPatternPlay = !allPatternPlay;
+      if (allPatternPlay) {
+         BuildOLEDHintString(String("Song Mode"));
+      } else {
+         BuildOLEDHintString(String("Pattern Mode"));
+      }
+      break;
+    case '*':
+      if (val == 0) {
+        BuildOLEDHintString(String("Copy Pattern"));
+        CopyPattern();
+      }
+      if (val == 1) {
+        BuildOLEDHintString(String("Paste Pattern"));
+        PastePattern();
+      }
+      if (val == 2) {
+        BuildOLEDHintString(String("Paste All Patt"));
+        PastePatternAll();
+      }
+      if (val == 3) {
+        voices[selectedTrack].samplerMode = !voices[selectedTrack].samplerMode;
+        voices[selectedTrack].SetEnvelopeNum(2);
+        BuildOLEDHintString(String("Samp Mode: " + String(voices[selectedTrack].samplerMode)));
+      }
+      break;
+  }
+}
+
+void Tracker::SetEffect(int val) {
+  voices[selectedTrack].SetEffectNum(val);
+};
+
+void Tracker::SetBPM(int val) {
+  bpm = bpms[val];
+  bps = bpm / 60;
+};
+
+void Tracker::SetDelay(int val) {
+  if (val > 0)
+    val += 1;
+  voices[selectedTrack].delay = val;
+};
+void Tracker::SetEnvelopeNum(int val) {
+  voices[selectedTrack].SetEnvelopeNum(val);
+};
+
+void Tracker::SetEnvelopeLength(int val) {
+  voices[selectedTrack].SetEnvelopeLength((val));
+};
+
+void Tracker::SetOctave(int val) {
+  voices[selectedTrack].SetOctave(val);
+};
+
+void Tracker::SetVolume(int val) {
+  voices[selectedTrack].SetVolume(val);
+};
+
+void Tracker::SetNote(int val, int track) {
+  if (isPlaying) {
+    //one behind trick
+    if (noteTime > 200) {
+      tracks[track][trackIndex + 1] = val + 1;
+      trackOctaves[track][trackIndex + 1] = voices[selectedTrack].octave;
+      trackInstruments[track][trackIndex + 1] = currentVoice;
+    } else {
+
+      tracks[track][trackIndex] = val + 1;
+      trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
+      trackInstruments[track][trackIndex] = currentVoice;
+    }
+  } else {
+    voices[track].SetNote(val, false, -1, currentVoice);
+  }
+};
+
+void Tracker::SetTrackNum(int val) {
+  selectedTrack = val;
+};
+
+void Tracker::ClearTrackNum(int val) {
+  Serial.println(val);
+  for (int i = patternLength * (currentPattern); i < patternLength * (currentPattern + 1); i++) {
+    tracks[val][i] = 0;
+  }
+  voices[val].arpNum = 0;
+};
+
+void Tracker::SetPatternNum(int val) {
+
+  trackIndex = trackIndex - (patternLength * currentPattern);
+  currentPattern = val;
+  trackIndex += (patternLength * currentPattern);
+};
+
+void Tracker::ClearPatternNum(int val) {
+  for (int j = 0; j < 4; j++) {
+    for (int i = patternLength * (currentPattern); i < patternLength * (currentPattern + 1); i++) {
+      tracks[j][i] = 0;
+    }
+    voices[j].arpNum = 0;
+  }
+};
+
+void Tracker::TogglePlayStop() {
+  isPlaying = !isPlaying;
+};
+
+//TBD
+void Tracker::CopyTrack(){};
+void Tracker::PasteTrack(){};
+
+void Tracker::CopyPattern() {
+  for (int j = 0; j < 4; j++) {
+    int c = 0;
+    for (int i = patternLength * (currentPattern); i < patternLength * (currentPattern + 1); i++) {
+      patternCopy[j][c] = tracks[j][i];
+      patternCopyInstruments[j][c] = trackInstruments[j][i];
+      patternCopyOctaves[j][c] = trackOctaves[j][i];
+      c++;
+    }
+  }
+};
+
+void Tracker::PastePattern() {
+  for (int j = 0; j < 4; j++) {
+    int c = 0;
+    for (int i = patternLength * (currentPattern); i < patternLength * (currentPattern + 1); i++) {
+      tracks[j][i] = patternCopy[j][c];
+      trackInstruments[j][i] = patternCopyInstruments[j][c];
+      trackOctaves[j][i] = patternCopyOctaves[j][c];
+      c++;
+    }
+  }
+};
+
+void Tracker::PastePatternAll() {
+  for (int r = 0; r < 4; r++) {
+    for (int j = 0; j < 4; j++) {
+      int c = 0;
+      for (int i = patternLength * (r); i < patternLength * (r + 1); i++) {
+        tracks[j][i] = patternCopy[j][c];
+        trackInstruments[j][i] = patternCopyInstruments[j][c];
+        trackOctaves[j][i] = patternCopyOctaves[j][c];
+        c++;
+      }
+    }
+  }
+};
+
+void Tracker::ClearAll(int val) {
+  selectedTrack = 0;
+  currentPattern = 0;
+  isPlaying = true;
+  pressedOnce = false;
+  allPatternPlay = false;
+  String("DRUMS").toCharArray(oledInstString, 6);
+  for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 512; i++) {
+
+      tracks[j][i] = 0;
+      trackInstruments[j][i] = 0;
+    }
+    voices[j].SetDelay(0);
+    voices[j].ResetEffects();
+    voices[j].SetEnvelopeNum(0);
+    voices[j].SetVolume(2);
+    voices[j].SetOctave(1);
+  }
+  patternLength = 32 + (32 * val);
+};
