@@ -5,10 +5,10 @@
 Tracker::Tracker() {
   patternLength = 32;
   isPlaying = true;
-  bpms[0] = 120;
-  bpms[1] = 132;
-  bpms[2] = 145;
-  bpms[3] = 180;
+  bpms[0] = 31000;
+  bpms[1] = 31001;
+  bpms[2] = 31002;
+  bpms[3] = 31003;
   SetBPM(0);
 
   for (int j = 0; j < 4; j++) {
@@ -24,9 +24,6 @@ int Tracker::UpdateTracker() {
   float delta = curTime - lastMillis;
   tempoBlink = 0;
   lastMillis = curTime;
-
-  if (!isPlaying)
-    delta = 0;
 
   beatTime += delta * bps;
   noteTime += delta * bps;
@@ -88,7 +85,7 @@ int Tracker::UpdateTracker() {
   sample = 0;
   sample2 = 0;
   for (int i = 0; i < 4; i++) {
-    sample += voices[i].UpdateVoice() / (3 + masterVolume * 5);
+    sample += voices[i].UpdateVoice() / (4 + masterVolume * 5);
   }
 
   return 0;
@@ -295,6 +292,9 @@ void Tracker::SetPatternLength(int val){};
 void Tracker::SaveDefaultSong(){};
 
 void Tracker::ClearAll(int val) {
+  selectedTrack = 0;
+  currentPattern = 0;
+  isPlaying =true;
   pressedOnce = false;
   allPatternPlay = false;
 

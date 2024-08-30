@@ -26,25 +26,30 @@ byte rowPins[ROWS] = { 4, 3, 8, 15 };     //connect to the row pinouts of the ke
 byte colPins[COLS] = { 16, 17, 18, 13 };  //connect to the column pinouts of the keypad
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
+//sample header 
+//1,2,1,3,1,4,1,5
+
 //i2s sound
-#include <I2S.h>
-const int sampleRate = 22000;  // sample rate in Hz
-bool comp;
+#include <ESP_I2S.h>
+I2SClass i2s;
+const int sampleRate = 22050;  // sample rate in Hz
+
 
 void setup() {
   keypad.setDebounceTime(0);
 
   //setup I2S pins
-  I2S.setDataPin(5);
-  I2S.setSckPin(6);  //blc
-  I2S.setFsPin(7);   //lrc
+  // i2s.setPins(I2S_PIN_BCLK, I2S_PIN_WS, I2S_PIN_DOUT);
+  i2s.setPins(6, 7, 5);
 
-  if (!I2S.begin(I2S_PHILIPS_MODE, sampleRate, 16)) {
+  // New i2s driver defaults to PHILIPS MODE when in STD mode, and will automatically
+  // fill both slots (ie left + right) with the same sample when using I2S_SLOT_MODE_MONO
+  if (!i2s.begin(I2S_MODE_STD, sampleRate, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO)) {
     Serial.println("Failed to initialize I2S!");
-    while (1)
-      ;
+    while (1) { } ;
   }
 }
+
 
 void loop() {
 
@@ -64,8 +69,12 @@ void loop() {
 
   int sample = tracker.UpdateTracker();
 
-  I2S.write((tracker.sample));
-  I2S.write((tracker.sample));
+  // New i2s only wants to write bytes out, so we need to split the sample before writing
+  // Copy the high and low bytes of our 16bit sample into a buffer and write that
+  byte outbuf[2];
+  outbuf[0] = lowByte(tracker.sample);
+  outbuf[1] = highByte(tracker.sample);
+  i2s.write(outbuf, 2);
 
   int tempoBlink = tracker.tempoBlink;
   if (tempoBlink > 0)
