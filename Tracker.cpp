@@ -85,7 +85,7 @@ int Tracker::UpdateTracker() {
   sample = 0;
   sample2 = 0;
   for (int i = 0; i < 4; i++) {
-    sample += voices[i].UpdateVoice() / (4 + masterVolume * 5);
+    sample += voices[i].UpdateVoice() / (3 + masterVolume * 5);
   }
 
   return 0;
