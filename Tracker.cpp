@@ -16,6 +16,7 @@ Tracker::Tracker() {
       tracks[j][i] = 0;
     }
   }
+
   ClearAll(0);
 }
 
@@ -25,8 +26,10 @@ int Tracker::UpdateTracker() {
   tempoBlink = 0;
   lastMillis = curTime;
 
-  beatTime += delta * bps;
-  noteTime += delta * bps;
+
+  float dbps = delta * bps;
+  beatTime += dbps;
+  noteTime += dbps;
   if (beatTime > 1000) {
     beatTime -= 1000;
     barCount++;
@@ -61,31 +64,22 @@ int Tracker::UpdateTracker() {
       int note = tracks[i][trackIndexBehind];
       int optOctave = trackOctaves[i][trackIndexBehind];
       int optInstrument = trackInstruments[i][trackIndexBehind];
-      int noteDelay = tracks[i][trackIndexBehind];
+
       if (note > 0) {
         heldNotes[i] = note;
         heldInsturments[i] = currentVoice;
         voices[i].SetNote(note - 1, false, optOctave, optInstrument);
-        //} else if (voices[i].arpNum > 0) {
-        // voices[i].SetNote(heldNotes[i] - 1, false, -1, heldInsturments[i] - 1);
-      } else if (voices[i].delay > 0) {
-        int delayIndex = trackIndexBehind - voices[i].delay * 2;
-        if (delayIndex < patternLength * (currentPattern + 0)) {
-          delayIndex = patternLength * (currentPattern + 1) + delayIndex;
-        }
-        int delayNote = tracks[i][delayIndex];
-        if (delayNote > 0) {
-          optInstrument = trackInstruments[i][delayIndex];
-          voices[i].SetNote(delayNote - 1, true, -1, optInstrument);
-        }
       }
     }
   }
 
   sample = 0;
-  sample2 = 0;
+
   for (int i = 0; i < 4; i++) {
-    sample += voices[i].UpdateVoice() / (3 + masterVolume * 5);
+    voices[i].bps = bps;
+    int samp = voices[i].UpdateVoice() / (3 + masterVolume * 5);
+    sample += samp;
+    lastSamples[i] = samp;
   }
 
   return 0;
@@ -95,8 +89,12 @@ void Tracker::SetCommand(char command, int val) {
   switch (command) {
     case 'T':
       SetTrackNum(val);
+      hintTime = 120;
+      String("Track: " + String(val + 1)).toCharArray(hint, 15);
       break;
     case 'B':
+      hintTime = 120;
+      String("BPM: " + String(bpms[val])).toCharArray(hint, 15);
       SetBPM(val);
       break;
     case 'N':
@@ -109,64 +107,167 @@ void Tracker::SetCommand(char command, int val) {
       SetNote(val, selectedTrack);
       break;
     case 'O':
+      hintTime = 120;
+      String("Octave: " + String(val)).toCharArray(hint, 15);
       SetOctave(val);
       break;
     case 'L':
+      hintTime = 120;
       SetEnvelopeLength(val);
+      String("Note Len: " + String(val + 1)).toCharArray(hint, 15);
       break;
     case 'E':
+      hintTime = 120;
+      switch (val) {
+        case 0:
+          String("Fade In").toCharArray(hint, 15);
+          break;
+        case 1:
+          String("Fade Out").toCharArray(hint, 15);
+          break;
+        case 2:
+          String("No Fade").toCharArray(hint, 15);
+          break;
+        case 3:
+          String("Loop").toCharArray(hint, 15);
+          break;
+      }
       SetEnvelopeNum(val);
       break;
     case 'V':
+      hintTime = 120;
+      String("Volume: " + String(val + 1)).toCharArray(hint, 15);
+      if (val == 3) {
+        String("Overdrive").toCharArray(hint, 15);
+      }
       SetVolume(val);
       break;
     case 'D':
-      SetDelay(val);
+      hintTime = 120;
+      SetEffect(val + 4);
+      switch (val) {
+        case 0:
+          String("Echo: " + String(voices[selectedTrack].delayMult)).toCharArray(hint, 15);
+          break;
+        case 1:
+          String("ArpChord: " + String(voices[selectedTrack].chordMult)).toCharArray(hint, 15);
+          break;
+        case 2:
+          String("Whoosh: " + String(voices[selectedTrack].whooshMult)).toCharArray(hint, 15);
+          break;
+        case 3:
+          String("Pitchbend: " + String(voices[selectedTrack].pitchMult)).toCharArray(hint, 15);
+          break;
+      }
+
+
       break;
     case 'A':
-      SetArp(val);
+      hintTime = 120;
+      SetEffect(val);
+      switch (val) {
+        case 0:
+          String("Effects Off").toCharArray(hint, 15);
+          break;
+        case 1:
+          String("Low Pass: " + String(voices[selectedTrack].lowPassMult)).toCharArray(hint, 15);
+          break;
+        case 2:
+          String("Retrig: " + String(voices[selectedTrack].reverbMult)).toCharArray(hint, 15);
+          break;
+        case 3:
+          String("Wobble: " + String(voices[selectedTrack].phaserMult)).toCharArray(hint, 15);
+          break;
+      }
       break;
     case '^':
+      hintTime = 120;
+      String("Clr Track: " + String(val + 1)).toCharArray(hint, 15);
       ClearTrackNum(val);
       break;
     case '$':
+      hintTime = 120;
+      String("Pattern: " + String(val + 1)).toCharArray(hint, 15);
       SetPatternNum(val);
       break;
     case '#':
+      hintTime = 120;
+      String("Clr Pattern: " + String(val + 1)).toCharArray(hint, 15);
       ClearPatternNum(val);
       break;
     case 'X':
+      hintTime = 120;
+      String("New Song: " + String((32 * (val + 1)))).toCharArray(hint, 15);
       ClearAll(val);
       break;
     case 'P':
+      hintTime = 120;
+      String("Recording: " + String((bool)isPlaying)).toCharArray(hint, 15);
       TogglePlayStop();
       break;
     case 'I':
       currentVoice = val;
+      hintTime = 120;
+      if (val > 1) {
+        String("Instrument: " + String(val)).toCharArray(hint, 15);
+        String("INS" + String(val)).toCharArray(oledInstString, 8);
+      } else if (val == 1) {
+        String("SFX Bank").toCharArray(hint, 15);
+        String("SFX").toCharArray(oledInstString, 6);
+      } else {
+        String("Drum Bank").toCharArray(hint, 15);
+        String("DRUM").toCharArray(oledInstString, 6);
+      }
+
       break;
     case 'H':
+
       masterVolume++;
       if (masterVolume > 1)
         masterVolume = 0;
+
+      hintTime = 120;
+      String("Mstr Volume: " + String(2 - masterVolume)).toCharArray(hint, 15);
+      break;
+    case 'K':
+
       break;
     case 'C':
       allPatternPlay = !allPatternPlay;
+      hintTime = 120;
+      if (allPatternPlay) {
+        String("Song Mode").toCharArray(hint, 15);
+      } else {
+        String("Pattern Mode").toCharArray(hint, 15);
+      }
       break;
     case '*':
-      if (val == 0)
+      hintTime = 120;
+      if (val == 0) {
+        String("Copy Pattern").toCharArray(hint, 15);
         CopyPattern();
+      }
       if (val == 1) {
+        String("Paste Pattern").toCharArray(hint, 15);
         PastePattern();
       }
       if (val == 2) {
+        String("Paste All Patt").toCharArray(hint, 15);
         PastePatternAll();
       }
+      if (val == 3) {
+        hintTime = 120;
+        voices[selectedTrack].samplerMode = !voices[selectedTrack].samplerMode;
+        voices[selectedTrack].SetEnvelopeNum(2);
+        String("Samp Mode: " + String(voices[selectedTrack].samplerMode)).toCharArray(hint, 15);
+      }
+
       break;
   }
 }
 
-void Tracker::SetArp(int val) {
-  voices[selectedTrack].SetArpNum(val);
+void Tracker::SetEffect(int val) {
+  voices[selectedTrack].SetEffectNum(val);
 };
 
 void Tracker::SetBPM(int val) {
@@ -294,10 +395,10 @@ void Tracker::SaveDefaultSong(){};
 void Tracker::ClearAll(int val) {
   selectedTrack = 0;
   currentPattern = 0;
-  isPlaying =true;
+  isPlaying = true;
   pressedOnce = false;
   allPatternPlay = false;
-
+  String("DRUMS").toCharArray(oledInstString, 6);
   for (int j = 0; j < 4; j++) {
     for (int i = 0; i < 512; i++) {
 
@@ -305,7 +406,7 @@ void Tracker::ClearAll(int val) {
       trackInstruments[j][i] = 0;
     }
     voices[j].SetDelay(0);
-    voices[j].SetArpNum(0);
+    voices[j].ResetEffects();
     voices[j].SetEnvelopeNum(0);
     voices[j].SetVolume(2);
     voices[j].SetOctave(1);

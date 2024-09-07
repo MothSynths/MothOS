@@ -9,7 +9,7 @@ void InputManager::UpdateInput(char rawInput) {
   trackCommand = ' ';
   ledCommand = ' ';
 
-   if (rawInput) {
+  if (rawInput) {
     switch (rawInput) {
       case 'A':
         ProcessClick(0);
@@ -118,11 +118,10 @@ void InputManager::ProcessClick(int input) {
               trackCommand = 'H';  // Line / Headphone
               trackCommandArgument = 0;
             } else {
-               trackCommand = 'C';
+              trackCommand = 'C';
             }
           }
           if (input >= 4 && input < 8) {
-
             trackCommand = '*';  //copy paste options 0 = copy track 1=paste track 2 = copy pattern 3 = paste pattern
             trackCommandArgument = input - 4;
           }

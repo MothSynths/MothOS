@@ -5,6 +5,9 @@
 
 class Tracker {
 public:
+  int preKEnvNumber;
+  int hintTime;
+  char hint[15];
   int masterVolume;
   bool pressedOnce;
   int sample;
@@ -14,10 +17,18 @@ public:
   int selectedTrack;
   bool allPatternPlay;
   int currentPattern;
+  int patternLength;
+  int trackIndex;
+  Voice voices[4];
   Tracker();
   int UpdateTracker();
   void SetCommand(char command, int val);
-
+  int lastSamples[4];
+  char oledInstString[8];
+  char oledOctString[6];
+  int currentVoice = 0;
+  int tracks[4][512];
+  int trackOctaves[4][512];
 private:
 
   float bpm;
@@ -25,24 +36,17 @@ private:
   float beatTime;
   float noteTime;
   int barCount;
-  int trackIndex;
   float lastMillis;
-  int patternLength;
-
-  Voice voices[4];
   float soundVelocity;
-  int currentVoice = 0;
-
   int bpms[4];
-  int tracks[4][512];
-  int trackOctaves[4][512];
+
   int trackInstruments[4][512];
   int patternCopy[4][128];
   int patternCopyOctaves[4][128];
   int patternCopyInstruments[4][128];
 
   void SetNote(int val, int track);
-  void SetArp(int val);
+  void SetEffect(int val);
   void SetBPM(int val);
   void SetDelay(int val);
   void SetEnvelopeNum(int val);

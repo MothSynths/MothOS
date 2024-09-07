@@ -32,7 +32,6 @@
 #include "Samples/sfx12.h"
 
 //instruments
-
 #include "Samples/instrument1.h"
 #include "Samples/instrument2.h"
 #include "Samples/instrument3.h"
@@ -48,17 +47,22 @@
 const unsigned int voiceLengths[] = { 30001, 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30009, 30010, 30011, 30012 };  //these are keys to vars, not actual lengths
 #endif
 Voice::Voice() {
+  for (int i = 0; i < 48; i++) {
+    int valOut = (int)(250 * pow(((i + 12) / 12.0), 2));
+    noteFreqLookup[i] = valOut;
+  }
 
-  phaserMult = 1;
-  reverbMult = 1;
-  lowPassMult = 1;
   octave = 1;
   sampleIndex = kick1Length * 1000;
   SetEnvelopeLength(1);
 
   SetVolume(2);
-  SetupArps();
+  ResetEffects();
+
   for (int i = 0; i <= 100; i++) {
+
+    whooshSin[i] = (int)((cos((float)i / 50.0 * 3.14) + 1.0) * 5.0);
+
     int i2 = (200 - i * 2);
     int i3 = i * 2;
     if (i2 > 100)
@@ -66,7 +70,7 @@ Voice::Voice() {
     if (i3 > 100)
       i3 = 100;
 
-    
+
     envelopes[0][i] = i2;
     envelopes[1][i] = i3;
     envelopes[2][i] = 100;
@@ -75,17 +79,15 @@ Voice::Voice() {
       //fade out envs
       envelopes[0][i] /= 1 + ((i - 95) * 20);
       envelopes[1][i] /= 1 + ((i - 95) * 20);
-      envelopes[2][i] /= 1 + ((i - 95) * 20);
     }
   }
 }
 
 
-
 int Voice::UpdateVoice() {
 
   int sample = 0;
-  if (voiceNum > 1) {
+  if (voiceNum > 1 || samplerMode) {
     sample = ReadWaveform();
   } else if (voiceNum == 1) {
     sample = ReadSfxWaveform();
@@ -93,27 +95,7 @@ int Voice::UpdateVoice() {
     sample = ReadDrumWaveform();
   }
 
-  if (arpNum == 1) {
-    UpdateHistory(sample);
-    sample = 0;
-    for (int i = 0; i < 3 * lowPassMult; i++) {
-      sample += GetHistorySample(i);
-    }
-    sample /= 3 * lowPassMult;
-  }
-
-  if (arpNum == 2) {
-    UpdateHistory(sample);
-    int rSample = 0;
-    for (int i = 1; i < 6; i++) {
-      rSample += GetHistorySample(i * 350 * reverbMult);
-    }
-
-    sample = rSample / 2;
-  }
-
-  if (arpNum == 3) {
-    UpdateHistory(sample);
+  if (phaserMult > 0) {
     if (phaserDir >= 0) {
       phaserOffset++;
       if (phaserOffset > 2000 * phaserMult) {
@@ -129,6 +111,22 @@ int Voice::UpdateVoice() {
     sample = (sample + rSample) / 2;
   }
 
+  if (delayMult > 0) {
+    sample += GetHistorySample(delayMult * 11600 / bps) / 5;
+  }
+
+  if (whooshMult > 0) {
+
+    whooshOffset += whooshMult * bps / 2;
+    if (whooshOffset > 15000)
+      whooshOffset = 0;
+    int whoosh = whooshSin[whooshOffset / 150] + 1;
+    for (int i = 0; i < whoosh; i++) {
+      sample += GetHistorySample(i + 1);
+    }
+    sample /= whoosh + 1;
+  }
+
   if (volumeNum == 3) {
     int limit = 3000;
     if (abs(sample) > limit) {
@@ -141,6 +139,23 @@ int Voice::UpdateVoice() {
     }
   }
 
+  if (lowPassMult > 0) {
+    for (int i = 1; i < 4 * lowPassMult; i++) {
+      sample += GetHistorySample(i);
+    }
+    sample /= 4 * lowPassMult;
+  }
+
+  UpdateHistory(sample);
+
+  if (reverbMult > 0) {
+    int rSample = 0;
+    for (int i = 2; i < 7; i++) {
+      rSample += GetHistorySample(i * 450 * reverbMult);
+    }
+    sample = rSample / 2;
+  }
+
   return sample;
 }
 
@@ -150,7 +165,22 @@ int Voice::ReadWaveform() {
   int sampleNext = 0;
   int hackIndex = 0;
   int sampleIndexReduced = sampleIndex / 1000;
-  switch (voiceNum) {
+  int vSel = voiceNum;
+  int baseFreqLocal = baseFreq;
+
+  if (samplerMode) {
+    vSel = note;
+    int oct = octave + 1;
+    if (recOctave > -1)
+      oct = recOctave + 1;
+
+    baseFreqLocal = oct * 500;
+    if (vSel < 2) {
+      return 0;
+    }
+  }
+
+  switch (vSel) {
     case 2:
       sampleLen = voiceLengths[hackIndex];
       sample = instrument1[sampleIndexReduced];
@@ -202,8 +232,45 @@ int Voice::ReadWaveform() {
       break;
   }
 
+  if (pitchMult > 0) {
+    if (pitchDur > 0) {
+      pitchDur -= pitchMult;
+      if (pitchMult == 1)
+        baseFreqLocal -= pitchDur / 5;
+      if (pitchMult == 2)
+        baseFreqLocal += pitchDur / 5;
+    }
+  }
 
-  sampleIndex += baseFreq;
+  if (chordMult > 0) {
+    chordStep++;
+    int step = 1500;
+    if (chordMult == 1) {
+      if (chordStep < step) {
+
+      } else if (chordStep < step * 2) {
+        baseFreqLocal = baseFreq_ch1;
+      } else if (chordStep < step * 3) {
+        baseFreqLocal = baseFreq_ch2;
+      } else {
+        chordStep = 0;
+      }
+    }
+
+    if (chordMult == 2) {
+      if (chordStep < step) {
+
+      } else if (chordStep < step * 2) {
+        baseFreqLocal = baseFreq_ch3;
+      } else if (chordStep < step * 3) {
+        baseFreqLocal = baseFreq_ch4;
+      } else {
+        chordStep = 0;
+      }
+    }
+  }
+
+  sampleIndex += baseFreqLocal;
 
   if (sampleIndex >= sampleLen * 1000) {
 
@@ -215,14 +282,13 @@ int Voice::ReadWaveform() {
   }
 
   envelopeIndex += envelopeLength;
-  if (envelopeIndex > 25000) {
-    envelopeIndex = 25000;
+  if (envelopeIndex > 50000) {
+    envelopeIndex = 50000;
     if (envelopeNum == 3)
       envelopeIndex = 1;
   }
 
-  sample = (sample * volume * envelopes[envelopeNum][envelopeIndex / 250]) / 300;  //300 because of 3 volume levels
-
+  sample = (sample * volume * envelopes[envelopeNum][envelopeIndex / 500]) / 300;  //300 because of 3 volume levels
 
   if (isDelay) {
     sample /= 3;
@@ -231,8 +297,6 @@ int Voice::ReadWaveform() {
 }
 
 int Voice::ReadDrumWaveform() {
-
-
   subSampleIndex = sampleIndex / 1000;
   if (envelopeNum > 1) {
     subSampleIndex = sampleLen - sampleIndex / 1000 - 1;
@@ -283,7 +347,16 @@ int Voice::ReadDrumWaveform() {
     if (recOctave > -1)
       oct = recOctave + 1;
 
-    sampleIndex += oct * 1000;
+    sampleIndex += oct * 500;
+    if (pitchMult > 0) {
+      if (pitchDur > 0) {
+        pitchDur -= pitchMult;
+        if (pitchMult == 1)
+          sampleIndex -= pitchDur / 5;
+        if (pitchMult == 2)
+          sampleIndex += pitchDur / 5;
+      }
+    }
   }
   sample = (sample * volume / 3);
   if (isDelay) {
@@ -346,7 +419,17 @@ int Voice::ReadSfxWaveform() {
     if (recOctave > -1)
       oct = recOctave + 1;
 
-    sampleIndex += oct * 1000;
+    sampleIndex += oct * 500;
+
+    if (pitchMult > 0) {
+      if (pitchDur > 0) {
+        pitchDur -= pitchMult;
+        if (pitchMult == 1)
+          sampleIndex -= pitchDur / 5;
+        if (pitchMult == 2)
+          sampleIndex += pitchDur / 5;
+      }
+    }
   }
   sample = (sample * volume / 3);
   if (isDelay) {
@@ -355,40 +438,42 @@ int Voice::ReadSfxWaveform() {
   return sample;
 }
 
-
-
-float Voice::LerpSample(int sampleA, int sampleB, float ratio) {
-  return (float)sampleA + ((float)(sampleB - sampleA) * ratio);
-}
-
 int Voice::GetBaseFreq(int val, int ioctave) {
-  int freqAdd = 2;
-  //if (arpNum > 0) {
-  // val += arps[arpNum][arpCount];
-  //}
-  int valOut = 1000 + ((val + ((ioctave)*12)) * freqAdd * freqAdd * 23);  // + (octave * freqAdd * 12);
-
+  if (val > 11) {
+    val -= 12;
+    ioctave++;
+  }
+  if (val < 0) {
+    val += 12;
+    ioctave--;
+  }
+  int valOut = noteFreqLookup[val + (ioctave * 12)];
   return valOut;
 }
 
 void Voice::SetNote(int val, bool delay, int optOctave, int optInstrument) {
 
   sampleIndex = 0;
-
+  pitchDur = 7000;
   envelopeIndex = 0;
   note = val;
 
   voiceNum = optInstrument;
   recOctave = optOctave;
-  if (optOctave == -1)
+  if (optOctave == -1) {
     baseFreq = GetBaseFreq(val, octave);
-  else
+    baseFreq_ch1 = GetBaseFreq(val - 4, octave);
+    baseFreq_ch2 = GetBaseFreq(val + 3, octave);
+    baseFreq_ch3 = GetBaseFreq(val - 5, octave);
+    baseFreq_ch4 = GetBaseFreq(val + 7, octave);
+  } else {
     baseFreq = GetBaseFreq(val, optOctave);
-
-  arpCount++;
-  if (arpCount > 3) {
-    arpCount = 0;
+    baseFreq_ch1 = GetBaseFreq(val - 4, optOctave);
+    baseFreq_ch2 = GetBaseFreq(val + 3, optOctave);
+    baseFreq_ch3 = GetBaseFreq(val - 5, optOctave);
+    baseFreq_ch4 = GetBaseFreq(val + 7, optOctave);
   }
+
   isDelay = delay;
 }
 
@@ -423,53 +508,79 @@ void Voice::SetEnvelopeNum(int val) {
 }
 
 void Voice::SetEnvelopeLength(int val) {
-  envelopeLength = 4-val;
+  envelopeLength = 4 - val;
 }
 
-void Voice::SetArpNum(int val) {
-  if (oldArpNum != val) {
-    phaserMult = 1;
-    reverbMult = 1;
-    lowPassMult = 1;
-  } else {
-    if (val == 1) {
-      lowPassMult++;
-      if (lowPassMult > 3) lowPassMult = 1;
-    }
-    if (val == 2) {
-      reverbMult++;
-      if (reverbMult > 3) reverbMult = 1;
-    }
-    if (val == 3) {
-      phaserMult++;
-      if (phaserMult > 3) phaserMult = 1;
+void Voice::SetEffectNum(int val) {
+
+  if (val == 0) {
+    ResetEffects();
+  }
+
+  if (val == 1) {
+    lowPassMult++;
+    if (lowPassMult > 2) {
+      lowPassMult = 0;
     }
   }
-  arpNum = val;
-  oldArpNum = val;
+
+  if (val == 2) {
+    reverbMult++;
+    if (reverbMult > 2) {
+      reverbMult = 0;
+    }
+  }
+
+  if (val == 3) {
+    phaserMult++;
+    if (phaserMult > 2) {
+      phaserMult = 0;
+    }
+  }
+  if (val == 4) {
+    delayMult++;
+    if (delayMult > 2) {
+      delayMult = 0;
+    }
+  }
+
+  if (val == 5) {
+    chordMult++;
+    if (chordMult > 2) {
+      chordMult = 0;
+    }
+  }
+
+  if (val == 6) {
+    whooshMult++;
+    if (whooshMult > 2) {
+      whooshMult = 0;
+    }
+  }
+
+  if (val == 7) {
+    pitchMult++;
+    if (pitchMult > 2) {
+      whooshMult = 0;
+    }
+  }
 }
 
-void Voice::SetupArps() {
-  arps[1][0] = -5;
-  arps[1][1] = -3;
-  arps[1][2] = 0;
-  arps[1][3] = 3;
-
-  arps[2][0] = 0;
-  arps[2][1] = 7;
-  arps[2][2] = 12;
-  arps[2][3] = 5;
-
-  arps[3][0] = 0;
-  arps[3][1] = 5;
-  arps[3][2] = 7;
-  arps[3][3] = 12;
+void Voice::ResetEffects() {
+  samplerMode = false;
+  phaserMult = 0;
+  delayMult = 0;
+  reverbMult = 0;
+  lowPassMult = 0;
+  chordMult = 0;
+  whooshMult = 0;
+  pitchMult = 0;
 }
 
 void Voice::UpdateHistory(int sample) {
-  sampleHistory[sampleHistoryIndex] = sample;
+  sampleHistory[sampleHistoryIndex / 2] = sample;
   sampleHistoryIndex++;
-  if (sampleHistoryIndex > 11999) {
+  if (sampleHistoryIndex > 24000 - 2) {
     sampleHistoryIndex = 0;
   }
 }
@@ -478,7 +589,7 @@ int Voice::GetHistorySample(int backoffset) {
   int ind = sampleHistoryIndex - backoffset;
 
   if (ind < 0) {
-    ind = 11999 + ind;
+    ind = 24000 + ind;
   }
-  return sampleHistory[ind];
+  return sampleHistory[ind / 2];
 }
