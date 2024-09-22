@@ -26,7 +26,6 @@ int Tracker::UpdateTracker() {
   tempoBlink = 0;
   lastMillis = curTime;
 
-
   float dbps = delta * bps;
   beatTime += dbps;
   noteTime += dbps;
@@ -85,17 +84,20 @@ int Tracker::UpdateTracker() {
   return 0;
 }
 
+void Tracker::BuildOLEDHintString(String string) {
+  hintTime = 120;
+  string.toCharArray(hint, 15);
+}
+
 void Tracker::SetCommand(char command, int val) {
   switch (command) {
     case 'T':
       SetTrackNum(val);
-      hintTime = 120;
-      String("Track: " + String(val + 1)).toCharArray(hint, 15);
+      BuildOLEDHintString(String("Track: " + String(val + 1)));
       break;
     case 'B':
-      hintTime = 120;
-      String("BPM: " + String(bpms[val])).toCharArray(hint, 15);
       SetBPM(val);
+      BuildOLEDHintString(String("BPM: " + String(bpms[val])));
       break;
     case 'N':
       if (!pressedOnce) {
@@ -107,161 +109,140 @@ void Tracker::SetCommand(char command, int val) {
       SetNote(val, selectedTrack);
       break;
     case 'O':
-      hintTime = 120;
-      String("Octave: " + String(val)).toCharArray(hint, 15);
       SetOctave(val);
+      BuildOLEDHintString(String("Octave: " + String(val)));
       break;
     case 'L':
-      hintTime = 120;
       SetEnvelopeLength(val);
-      String("Note Len: " + String(val + 1)).toCharArray(hint, 15);
+      BuildOLEDHintString(String("Note Len: " + String(val + 1)));
       break;
     case 'E':
-      hintTime = 120;
+      SetEnvelopeNum(val);
       switch (val) {
         case 0:
-          String("Fade In").toCharArray(hint, 15);
+          BuildOLEDHintString(String("Fade Out"));
           break;
         case 1:
-          String("Fade Out").toCharArray(hint, 15);
+          BuildOLEDHintString(String("Fade In"));
           break;
         case 2:
-          String("No Fade").toCharArray(hint, 15);
+          BuildOLEDHintString(String("No Fade"));
           break;
         case 3:
-          String("Loop").toCharArray(hint, 15);
+          BuildOLEDHintString(String("Loop"));
           break;
       }
-      SetEnvelopeNum(val);
       break;
     case 'V':
-      hintTime = 120;
-      String("Volume: " + String(val + 1)).toCharArray(hint, 15);
       if (val == 3) {
-        String("Overdrive").toCharArray(hint, 15);
+        BuildOLEDHintString(String("Overdrive"));
       }
       SetVolume(val);
+      BuildOLEDHintString(String("Volume: " + String(val + 1)));
       break;
     case 'D':
-      hintTime = 120;
       SetEffect(val + 4);
       switch (val) {
         case 0:
-          String("Echo: " + String(voices[selectedTrack].delayMult)).toCharArray(hint, 15);
+          BuildOLEDHintString(String("Echo: " + String(voices[selectedTrack].delayMult)));
           break;
         case 1:
-          String("ArpChord: " + String(voices[selectedTrack].chordMult)).toCharArray(hint, 15);
+          BuildOLEDHintString(String("ArpChord: " + String(voices[selectedTrack].chordMult)));
           break;
         case 2:
-          String("Whoosh: " + String(voices[selectedTrack].whooshMult)).toCharArray(hint, 15);
+          BuildOLEDHintString(String("Whoosh: " + String(voices[selectedTrack].whooshMult)));
           break;
         case 3:
-          String("Pitchbend: " + String(voices[selectedTrack].pitchMult)).toCharArray(hint, 15);
+          BuildOLEDHintString(String("Pitchbend: " + String(voices[selectedTrack].pitchMult)));
           break;
       }
-
-
       break;
     case 'A':
-      hintTime = 120;
       SetEffect(val);
       switch (val) {
         case 0:
-          String("Effects Off").toCharArray(hint, 15);
+          BuildOLEDHintString(String("Effects Off"));
           break;
         case 1:
-          String("Low Pass: " + String(voices[selectedTrack].lowPassMult)).toCharArray(hint, 15);
+          BuildOLEDHintString(String("Low Pass: " + String(voices[selectedTrack].lowPassMult)));
           break;
         case 2:
-          String("Retrig: " + String(voices[selectedTrack].reverbMult)).toCharArray(hint, 15);
+          BuildOLEDHintString(String("Retrig: " + String(voices[selectedTrack].reverbMult)));
           break;
         case 3:
-          String("Wobble: " + String(voices[selectedTrack].phaserMult)).toCharArray(hint, 15);
+          BuildOLEDHintString(String("Wobble: " + String(voices[selectedTrack].phaserMult)));
           break;
       }
       break;
     case '^':
-      hintTime = 120;
-      String("Clr Track: " + String(val + 1)).toCharArray(hint, 15);
       ClearTrackNum(val);
+      BuildOLEDHintString(String("Clr Track: " + String(val + 1)));
       break;
     case '$':
-      hintTime = 120;
-      String("Pattern: " + String(val + 1)).toCharArray(hint, 15);
       SetPatternNum(val);
+      BuildOLEDHintString(String("Pattern: " + String(val + 1)));
       break;
     case '#':
-      hintTime = 120;
-      String("Clr Pattern: " + String(val + 1)).toCharArray(hint, 15);
       ClearPatternNum(val);
+      BuildOLEDHintString(String("Clr Pattern: " + String(val + 1)));
       break;
     case 'X':
-      hintTime = 120;
-      String("New Song: " + String((32 * (val + 1)))).toCharArray(hint, 15);
       ClearAll(val);
+      BuildOLEDHintString(String("New Song: " + String((32 * (val + 1)))));
       break;
     case 'P':
-      hintTime = 120;
-      String("Recording: " + String((bool)isPlaying)).toCharArray(hint, 15);
+      BuildOLEDHintString(String("Recording: " + String((bool)isPlaying)));
       TogglePlayStop();
       break;
     case 'I':
       currentVoice = val;
-      hintTime = 120;
       if (val > 1) {
-        String("Instrument: " + String(val)).toCharArray(hint, 15);
+        BuildOLEDHintString(String("Instrument: " + String(val)));
         String("INS" + String(val)).toCharArray(oledInstString, 8);
       } else if (val == 1) {
-        String("SFX Bank").toCharArray(hint, 15);
+        BuildOLEDHintString(String("SFX Bank"));
         String("SFX").toCharArray(oledInstString, 6);
       } else {
-        String("Drum Bank").toCharArray(hint, 15);
+        BuildOLEDHintString(String("Drum Bank"));
         String("DRUM").toCharArray(oledInstString, 6);
       }
-
       break;
     case 'H':
-
       masterVolume++;
       if (masterVolume > 1)
         masterVolume = 0;
 
-      hintTime = 120;
-      String("Mstr Volume: " + String(2 - masterVolume)).toCharArray(hint, 15);
+      BuildOLEDHintString(String("Mstr Volume: " + String(2 - masterVolume)));
       break;
     case 'K':
 
       break;
     case 'C':
       allPatternPlay = !allPatternPlay;
-      hintTime = 120;
       if (allPatternPlay) {
-        String("Song Mode").toCharArray(hint, 15);
+         BuildOLEDHintString(String("Song Mode"));
       } else {
-        String("Pattern Mode").toCharArray(hint, 15);
+         BuildOLEDHintString(String("Pattern Mode"));
       }
       break;
     case '*':
-      hintTime = 120;
       if (val == 0) {
-        String("Copy Pattern").toCharArray(hint, 15);
+        BuildOLEDHintString(String("Copy Pattern"));
         CopyPattern();
       }
       if (val == 1) {
-        String("Paste Pattern").toCharArray(hint, 15);
+        BuildOLEDHintString(String("Paste Pattern"));
         PastePattern();
       }
       if (val == 2) {
-        String("Paste All Patt").toCharArray(hint, 15);
+        BuildOLEDHintString(String("Paste All Patt"));
         PastePatternAll();
       }
       if (val == 3) {
-        hintTime = 120;
         voices[selectedTrack].samplerMode = !voices[selectedTrack].samplerMode;
         voices[selectedTrack].SetEnvelopeNum(2);
-        String("Samp Mode: " + String(voices[selectedTrack].samplerMode)).toCharArray(hint, 15);
+        BuildOLEDHintString(String("Samp Mode: " + String(voices[selectedTrack].samplerMode)));
       }
-
       break;
   }
 }
@@ -387,10 +368,6 @@ void Tracker::PastePatternAll() {
     }
   }
 };
-
-//TBD
-void Tracker::SetPatternLength(int val){};
-void Tracker::SaveDefaultSong(){};
 
 void Tracker::ClearAll(int val) {
   selectedTrack = 0;

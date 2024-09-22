@@ -27,16 +27,12 @@ public:
   void ResetEffects();
 
 private:
-
   int noteFreqLookup[48];
-
   int pitchDur;
   int chordStep;
   int whooshOffset;
   int whooshSin[101];
   int oldArpNum;
-
-
   int envelopes[4][101];
   int envelopeIndex;
   int sample;

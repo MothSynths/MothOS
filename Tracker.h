@@ -1,7 +1,7 @@
 #include "Voice.h"
 #ifndef Tracker_h
 #define Tracker_h
-
+#include <U8g2lib.h>
 
 class Tracker {
 public:
@@ -29,8 +29,8 @@ public:
   int currentVoice = 0;
   int tracks[4][512];
   int trackOctaves[4][512];
-private:
 
+private:
   float bpm;
   float bps;
   float beatTime;
@@ -39,12 +39,11 @@ private:
   float lastMillis;
   float soundVelocity;
   int bpms[4];
-
   int trackInstruments[4][512];
   int patternCopy[4][128];
   int patternCopyOctaves[4][128];
   int patternCopyInstruments[4][128];
-
+  void BuildOLEDHintString(String string);
   void SetNote(int val, int track);
   void SetEffect(int val);
   void SetBPM(int val);
@@ -64,8 +63,6 @@ private:
   void CopyPattern();
   void PastePattern();
   void PastePatternAll();
-  void SetPatternLength(int val);
-  void SaveDefaultSong();
   void ClearAll(int val);
   int UpdateVoices();
   int heldNotes[4];
