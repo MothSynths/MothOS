@@ -5,10 +5,10 @@
 Tracker::Tracker() {
   patternLength = 32;
   isPlaying = true;
-  bpms[0] = 31000;
-  bpms[1] = 31001;
-  bpms[2] = 31002;
-  bpms[3] = 31003;
+  bpms[0] = 120;
+  bpms[1] = 140;
+  bpms[2] = 95;
+  bpms[3] = 180;
   SetBPM(0);
 
   for (int j = 0; j < 4; j++) {

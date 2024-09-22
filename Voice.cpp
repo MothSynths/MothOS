@@ -42,10 +42,7 @@
 #include "Samples/instrument8.h"
 #include "Samples/instrument9.h"
 #include "Samples/instrument10.h"
-#ifndef voiceLength
-#define voiceLength
-const unsigned int voiceLengths[] = { 30001, 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30009, 30010, 30011, 30012 };  //these are keys to vars, not actual lengths
-#endif
+
 Voice::Voice() {
   for (int i = 0; i < 48; i++) {
     int valOut = (int)(250 * pow(((i + 12) / 12.0), 2));
@@ -163,7 +160,6 @@ int Voice::UpdateVoice() {
 int Voice::ReadWaveform() {
   int sampleLen = 0;
   int sampleNext = 0;
-  int hackIndex = 0;
   int sampleIndexReduced = sampleIndex / 1000;
   int vSel = voiceNum;
   int baseFreqLocal = baseFreq;
@@ -182,53 +178,44 @@ int Voice::ReadWaveform() {
 
   switch (vSel) {
     case 2:
-      sampleLen = voiceLengths[hackIndex];
+      sampleLen = instrument1Length;
       sample = instrument1[sampleIndexReduced];
       break;
     case 3:
-      hackIndex = 1;
-      sampleLen = voiceLengths[hackIndex];
-      sample = instrument2[sampleIndexReduced];
+      sampleLen = instrument2Length;
+        sample = instrument2[sampleIndexReduced];
       break;
     case 4:
-      hackIndex = 2;
-      sampleLen = voiceLengths[hackIndex];
-      sample = instrument3[sampleIndexReduced];
+      sampleLen = instrument3Length;
+        sample = instrument3[sampleIndexReduced];
       break;
     case 5:
-      hackIndex = 3;
-      sampleLen = voiceLengths[hackIndex];
-      sample = instrument4[sampleIndexReduced];
+      sampleLen = instrument4Length;
+        sample = instrument4[sampleIndexReduced];
       break;
     case 6:
-      hackIndex = 4;
-      sampleLen = voiceLengths[hackIndex];
-      sample = instrument5[sampleIndexReduced];
+      sampleLen = instrument5Length;
+        sample = instrument5[sampleIndexReduced];
       break;
     case 7:
-      hackIndex = 5;
-      sampleLen = voiceLengths[hackIndex];
-      sample = instrument6[sampleIndexReduced];
+      sampleLen = instrument6Length;
+        sample = instrument6[sampleIndexReduced];
       break;
     case 8:
-      hackIndex = 6;
-      sampleLen = voiceLengths[hackIndex];
-      sample = instrument7[sampleIndexReduced];
+      sampleLen = instrument7Length;
+        sample = instrument7[sampleIndexReduced];
       break;
     case 9:
-      hackIndex = 7;
-      sampleLen = voiceLengths[hackIndex];
-      sample = instrument8[sampleIndexReduced];
+      sampleLen = instrument8Length;
+        sample = instrument8[sampleIndexReduced];
       break;
     case 10:
-      hackIndex = 8;
-      sampleLen = voiceLengths[hackIndex];
-      sample = instrument9[sampleIndexReduced];
+      sampleLen = instrument9Length;
+        sample = instrument9[sampleIndexReduced];
       break;
     case 11:
-      hackIndex = 9;
-      sampleLen = voiceLengths[hackIndex];
-      sample = instrument10[sampleIndexReduced];
+      sampleLen = instrument10Length;
+        sample = instrument10[sampleIndexReduced];
       break;
   }
 
@@ -301,42 +288,54 @@ int Voice::ReadDrumWaveform() {
   if (envelopeNum > 1) {
     subSampleIndex = sampleLen - sampleIndex / 1000 - 1;
   }
-  sampleLen = 16000;
+
   switch (note) {
     case 0:
+      sampleLen = kick1Length;
       sample = kick1[subSampleIndex];
       break;
     case 1:
+      sampleLen = snare1Length;
       sample = snare1[subSampleIndex];
       break;
     case 2:
+      sampleLen = special1Length;
       sample = special1[subSampleIndex];
       break;
     case 3:
+      sampleLen = hihat1Length;
       sample = hihat1[subSampleIndex];
       break;
     case 4:
+      sampleLen = kick2Length;
       sample = kick2[subSampleIndex];
       break;
     case 5:
+      sampleLen = snare2Length;
       sample = snare2[subSampleIndex];
       break;
     case 6:
+      sampleLen = special2Length;
       sample = special2[subSampleIndex];
       break;
     case 7:
+      sampleLen = hihat2Length;
       sample = hihat2[subSampleIndex];
       break;
     case 8:
+      sampleLen = kick3Length;
       sample = kick3[subSampleIndex];
       break;
     case 9:
+      sampleLen = snare3Length;
       sample = snare3[subSampleIndex];
       break;
     case 10:
+      sampleLen = special3Length;
       sample = special3[subSampleIndex];
       break;
     case 11:
+      sampleLen = hihat3Length;
       sample = hihat3[subSampleIndex];
       break;
   }
@@ -373,42 +372,54 @@ int Voice::ReadSfxWaveform() {
   if (envelopeNum > 1) {
     subSampleIndex = sampleLen - sampleIndex / 1000 - 1;
   }
-  sampleLen = 16000;
+
   switch (note) {
     case 0:
+      sampleLen = sfx1Length;
       sample = sfx1[subSampleIndex];
       break;
     case 1:
+      sampleLen = sfx2Length;
       sample = sfx2[subSampleIndex];
       break;
     case 2:
+      sampleLen = sfx3Length;
       sample = sfx3[subSampleIndex];
       break;
     case 3:
+      sampleLen = sfx4Length;
       sample = sfx4[subSampleIndex];
       break;
     case 4:
+      sampleLen = sfx5Length;
       sample = sfx5[subSampleIndex];
       break;
     case 5:
+      sampleLen = sfx6Length;
       sample = sfx6[subSampleIndex];
       break;
     case 6:
+      sampleLen = sfx7Length;
       sample = sfx7[subSampleIndex];
       break;
     case 7:
+      sampleLen = sfx8Length;
       sample = sfx8[subSampleIndex];
       break;
     case 8:
+      sampleLen = sfx9Length;
       sample = sfx9[subSampleIndex];
       break;
     case 9:
+      sampleLen = sfx10Length;
       sample = sfx10[subSampleIndex];
       break;
     case 10:
+      sampleLen = sfx11Length;
       sample = sfx11[subSampleIndex];
       break;
     case 11:
+      sampleLen = sfx12Length;
       sample = sfx12[subSampleIndex];
       break;
   }
