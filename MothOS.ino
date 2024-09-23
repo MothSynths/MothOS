@@ -1,3 +1,6 @@
+//IMPORTANT: COMMENT OUT ISOLED BELOW IF NOT USING ACTUAL OLED
+#define ISOLED
+
 #include <Arduino.h>
 
 //MothSynth led manager init
@@ -63,6 +66,7 @@ void setup() {
   noteChars[10] = String("A#");
   noteChars[11] = String("B");
 
+  #ifdef ISOLED
   xTaskCreatePinnedToCore(
     Task2Loop,
     "Core 0 task",
@@ -71,7 +75,7 @@ void setup() {
     1,
     &Task2,
     0);
-
+  #endif
   keypad.setDebounceTime(0);
 
   i2s.setPins(6, 7, 5);
