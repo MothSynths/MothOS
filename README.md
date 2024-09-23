@@ -1,5 +1,6 @@
 # Important Notes:
 * ESP32 S3 with 512kb RAM and 4MB Flash Required if building DIY MothSynths
+* Optional OLED
 * When compiling sketch, select PARTITION SCHEME / HUGE APP from Arduino IDE tools menu, otherwise the app wont fit on your esp32
 
 # MothSynth
