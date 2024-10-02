@@ -572,7 +572,7 @@ void Voice::SetEffectNum(int val) {
   if (val == 7) {
     pitchMult++;
     if (pitchMult > 2) {
-      whooshMult = 0;
+      pitchMult = 0;
     }
   }
 }
