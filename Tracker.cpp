@@ -279,7 +279,7 @@ void Tracker::SetNote(int val, int track) {
     tracks[track][trackIndex] = val + 1;
     trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
     trackInstruments[track][trackIndex] = currentVoice;
-    lastNoteTrackIndex = trackIndex;
+    lastNoteTrackIndex = trackIndex % patternLength;
   } else {
     voices[track].SetNote(val, false, -1, currentVoice);
   }
