@@ -153,6 +153,22 @@ bool ScreenManager::UpdateInstructionsScreen(Tracker &tracker, U8G2_SSD1306_128X
 }
 
 void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
+  char buffa[4];
+  if (tracker.lastNoteTrackIndex == lastNoteBeat) {
+    if (noteBeatTime > 0) {
+      noteBeatTime--;
+    }
+  } else {
+    lastNoteBeat = tracker.lastNoteTrackIndex;
+    noteBeatTime = 200;
+  }
+  if (noteBeatTime > 0) {
+    String(tracker.lastNoteTrackIndex).toCharArray(buffa, 4);
+    screen.drawStr(56, 63, buffa);
+  }
+
+
+
   screen.setFont(u8g2_font_6x13_tf);
   for (int i = 0; i < 4; i++) {
     int val = tracker.lastSamples[i] / 100;

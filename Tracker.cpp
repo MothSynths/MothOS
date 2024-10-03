@@ -21,25 +21,36 @@ Tracker::Tracker() {
 }
 
 int Tracker::UpdateTracker() {
+
+
   float curTime = millis();
   float delta = curTime - lastMillis;
   tempoBlink = 0;
   lastMillis = curTime;
 
   float dbps = delta * bps;
-  beatTime += dbps;
+
   noteTime += dbps;
-  if (beatTime > 1000) {
-    beatTime -= 1000;
-    barCount++;
-    tempoBlink = 20;
-    if (barCount > 7) {
-      tempoBlink = 100;
-      barCount = 0;
-    }
-  }
 
   if (noteTime > 250) {
+    barCount++;
+    if (barCount > 3) {
+      tempoBlink = 30;
+      barCount = 0;
+    }
+
+    for (int i = 0; i < 4; i++) {
+      int note = tracks[i][trackIndex];
+      int optOctave = trackOctaves[i][trackIndex];
+      int optInstrument = trackInstruments[i][trackIndex];
+
+      if (note > 0) {
+        heldNotes[i] = note;
+        heldInsturments[i] = currentVoice;
+        voices[i].SetNote(note - 1, false, optOctave, optInstrument);
+      }
+    }
+
     noteTime -= 250;
     trackIndex++;
 
@@ -51,23 +62,6 @@ int Tracker::UpdateTracker() {
           currentPattern -= 4;
         }
         trackIndex = patternLength * (currentPattern + 0);
-      }
-    }
-
-    int trackIndexBehind = trackIndex - 1;
-    if (trackIndexBehind < patternLength * (currentPattern + 0)) {
-      trackIndexBehind = patternLength * (currentPattern + 1) + trackIndexBehind;
-    }
-
-    for (int i = 0; i < 4; i++) {
-      int note = tracks[i][trackIndexBehind];
-      int optOctave = trackOctaves[i][trackIndexBehind];
-      int optInstrument = trackInstruments[i][trackIndexBehind];
-
-      if (note > 0) {
-        heldNotes[i] = note;
-        heldInsturments[i] = currentVoice;
-        voices[i].SetNote(note - 1, false, optOctave, optInstrument);
       }
     }
   }
@@ -102,8 +96,10 @@ void Tracker::SetCommand(char command, int val) {
     case 'N':
       if (!pressedOnce) {
         noteTime = 0;
-        beatTime = 0;
         trackIndex = 0;
+        lastMillis = millis();
+        barCount = 0;
+        tempoBlink = 30;
       }
       pressedOnce = true;
       SetNote(val, selectedTrack);
@@ -220,9 +216,9 @@ void Tracker::SetCommand(char command, int val) {
     case 'C':
       allPatternPlay = !allPatternPlay;
       if (allPatternPlay) {
-         BuildOLEDHintString(String("Song Mode"));
+        BuildOLEDHintString(String("Song Mode"));
       } else {
-         BuildOLEDHintString(String("Pattern Mode"));
+        BuildOLEDHintString(String("Pattern Mode"));
       }
       break;
     case '*':
@@ -280,19 +276,14 @@ void Tracker::SetVolume(int val) {
 void Tracker::SetNote(int val, int track) {
   if (isPlaying) {
     //one behind trick
-    if (noteTime > 200) {
-      tracks[track][trackIndex + 1] = val + 1;
-      trackOctaves[track][trackIndex + 1] = voices[selectedTrack].octave;
-      trackInstruments[track][trackIndex + 1] = currentVoice;
-    } else {
-
-      tracks[track][trackIndex] = val + 1;
-      trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
-      trackInstruments[track][trackIndex] = currentVoice;
-    }
+    tracks[track][trackIndex] = val + 1;
+    trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
+    trackInstruments[track][trackIndex] = currentVoice;
+    lastNoteTrackIndex = trackIndex;
   } else {
     voices[track].SetNote(val, false, -1, currentVoice);
   }
+  
 };
 
 void Tracker::SetTrackNum(int val) {
@@ -300,7 +291,6 @@ void Tracker::SetTrackNum(int val) {
 };
 
 void Tracker::ClearTrackNum(int val) {
-  Serial.println(val);
   for (int i = patternLength * (currentPattern); i < patternLength * (currentPattern + 1); i++) {
     tracks[val][i] = 0;
   }

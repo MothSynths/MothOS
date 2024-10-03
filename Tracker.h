@@ -5,6 +5,7 @@
 
 class Tracker {
 public:
+  int lastNoteTrackIndex;
   int preKEnvNumber;
   int hintTime;
   char hint[15];
@@ -31,6 +32,7 @@ public:
   int trackOctaves[4][512];
 
 private:
+  int lastNoteTrack;
   float bpm;
   float bps;
   float beatTime;
