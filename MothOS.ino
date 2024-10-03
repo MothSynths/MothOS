@@ -80,7 +80,6 @@ void setup() {
 
   i2s.setPins(6, 7, 5);
   if (!i2s.begin(I2S_MODE_STD, sampleRate, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO)) {
-    Serial.println("Failed to initialize I2S!");
     while (1) {};
   }
 
