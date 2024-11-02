@@ -1,3 +1,11 @@
+#include <MIDI.h>
+
+#define RX_PIN 40  // GPIO 40 for MIDI input
+#define TX_PIN -1  // TX pin not used
+// Create a MIDI object
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
+
+
 //IMPORTANT: COMMENT OUT ISOLED BELOW IF NOT USING ACTUAL OLED
 #define ISOLED
 
@@ -66,16 +74,16 @@ void setup() {
   noteChars[10] = String("A#");
   noteChars[11] = String("B");
 
-  #ifdef ISOLED
+#ifdef ISOLED
   xTaskCreatePinnedToCore(
     Task2Loop,
     "Core 0 task",
     10000,
     NULL,
-    1,
+    0,
     &Task2,
     0);
-  #endif
+#endif
   keypad.setDebounceTime(0);
 
   i2s.setPins(6, 7, 5);
@@ -84,16 +92,35 @@ void setup() {
   }
 
   screen.begin();
+
+  
+}
+
+int nnote = 0;
+int lastNN = 0;
+// Callback function to handle note-on events
+void handleNoteOn(byte channel, byte note, byte velocity) {
+  nnote = (int)note;
+  lastNN = nnote % 12;
+}
+
+// Callback function to handle note-off events
+void handleNoteOff(byte channel, byte note, byte velocity) {
 }
 
 void loop() {
 
   inputManager.UpdateInput(keypad.getKey());
   char note = inputManager.note;
+
   char trackCommand = inputManager.trackCommand;
   int trackCommandArgument = inputManager.trackCommandArgument;
   char ledCommand = inputManager.ledCommand;
-
+  if (lastNN > 0) {
+    trackCommandArgument = lastNN;
+    lastNN = 0;
+    trackCommand = 'N';
+  }
   if (ledCommand != ' ') {
     ledCommandOLED = ledCommand;
     ledManager.SetCommand(ledCommand);
@@ -122,10 +149,27 @@ void loop() {
 }
 
 void Task2Loop(void *parameter) {
+
+  Serial2.begin(31250, SERIAL_8N1, RX_PIN, TX_PIN);
+
+  // Set up the MIDI library with Serial2 as the input interface
+  MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to all channels
+  // Set up callbacks for handling note-on and note-off events
+  MIDI.setHandleNoteOn(handleNoteOn);
+  MIDI.setHandleNoteOff(handleNoteOff);
+
+  Serial.println("MIDI Initialized. Ready to receive MIDI messages...");
+  int skip = 1;
   for (;;) {
-    screen.firstPage();
-    do {
-      screenManager.Update(tracker, screen, ledCommandOLED, volumeBars, noteChars);
-    } while (screen.nextPage());
+    bool read = MIDI.read();
+    skip--;
+    if (skip == 0) {
+      skip=100;
+      screen.firstPage();
+      do {
+
+        screenManager.Update(tracker, screen, ledCommandOLED, volumeBars, noteChars);
+      } while (screen.nextPage());
+    }
   }
 }
