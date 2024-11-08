@@ -13,7 +13,7 @@ public:
   bool pressedOnce;
   int sample;
   int sample2;
-  bool isPlaying;
+  int isPlaying;
   float tempoBlink;
   int selectedTrack;
   bool allPatternPlay;
@@ -29,9 +29,12 @@ public:
   char oledOctString[6];
   int currentVoice = 0;
   int tracks[4][512];
+  bool tracksPlayed[4];
+  int trackOffsets[4][512];
   int trackOctaves[4][512];
 
 private:
+
   int lastNoteTrack;
   float bpm;
   float bps;
