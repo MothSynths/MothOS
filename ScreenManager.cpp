@@ -214,12 +214,12 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
 
   screen.setFont(u8g2_font_logisoso16_tf);
   String s = "";
-  if (tracker.trackIndex % tracker.patternLength < 10) {
-    s = "0" + String(tracker.trackIndex % tracker.patternLength);
+  if (tracker.trackIndex % tracker.patternLength < 20) {
+    s = "0" + String((tracker.trackIndex % tracker.patternLength) / 2);
   } else {
-    s = String(tracker.trackIndex % tracker.patternLength);
+    s = String((tracker.trackIndex % tracker.patternLength) / 2);
   }
-  s += "/" + String(tracker.patternLength);
+  s += "/" + String(tracker.patternLength / 2);
   char buf[6];
 
   s.toCharArray(buf, 6);
