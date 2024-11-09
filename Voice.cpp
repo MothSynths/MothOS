@@ -578,6 +578,7 @@ void Voice::SetEffectNum(int val) {
 }
 
 void Voice::ResetEffects() {
+  samplerMode = false;
   phaserMult = 0;
   delayMult = 0;
   reverbMult = 0;
