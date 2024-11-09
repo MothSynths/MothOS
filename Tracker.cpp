@@ -21,6 +21,8 @@ Tracker::Tracker() {
 }
 
 int Tracker::UpdateTracker() {
+
+
   float curTime = millis();
   float delta = curTime - lastMillis;
   tempoBlink = 0;
@@ -30,10 +32,14 @@ int Tracker::UpdateTracker() {
 
   noteTime += dbps;
 
-  for (int i = 0; i < 4; i++) {
-    int trigTime = trackOffsets[i][trackIndex];
-    if (trigTime < noteTime && tracksPlayed[i] == false) {
-      tracksPlayed[i] = true;
+  if (noteTime > 250) {
+    barCount++;
+    if (barCount > 3) {
+      tempoBlink = 30;
+      barCount = 0;
+    }
+
+    for (int i = 0; i < 4; i++) {
       int note = tracks[i][trackIndex];
       int optOctave = trackOctaves[i][trackIndex];
       int optInstrument = trackInstruments[i][trackIndex];
@@ -44,21 +50,8 @@ int Tracker::UpdateTracker() {
         voices[i].SetNote(note - 1, false, optOctave, optInstrument);
       }
     }
-  }
 
-  if (noteTime > 125) {
-
-    barCount++;
-    if (barCount > 7) {
-      tempoBlink = 30;
-      barCount = 0;
-    }
-
-    for (int i = 0; i < 4; i++) {
-      tracksPlayed[i] = false;
-    }
-
-    noteTime -= 125;
+    noteTime -= 250;
     trackIndex++;
 
     if (trackIndex >= patternLength * (currentPattern + 1)) {
@@ -194,13 +187,8 @@ void Tracker::SetCommand(char command, int val) {
       BuildOLEDHintString(String("New Song: " + String((32 * (val + 1)))));
       break;
     case 'P':
+      BuildOLEDHintString(String("Recording: " + String((bool)isPlaying)));
       TogglePlayStop();
-      if (isPlaying == 0) {
-        BuildOLEDHintString(String("Rec On"));
-      } else {
-        BuildOLEDHintString(String("Rec Off"));
-      }
-
       break;
     case 'I':
       currentVoice = val;
@@ -286,17 +274,16 @@ void Tracker::SetVolume(int val) {
 };
 
 void Tracker::SetNote(int val, int track) {
-  if (isPlaying == 0) {
+  if (isPlaying) {
     //one behind trick
-    trackOffsets[track][trackIndex] = noteTime;
     tracks[track][trackIndex] = val + 1;
     trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
     trackInstruments[track][trackIndex] = currentVoice;
-    lastNoteTrackIndex = trackIndex % patternLength / 2;
-    voices[track].SetNote(val, false, -1, currentVoice);
+    lastNoteTrackIndex = trackIndex % patternLength;
   } else {
     voices[track].SetNote(val, false, -1, currentVoice);
   }
+  
 };
 
 void Tracker::SetTrackNum(int val) {
@@ -327,9 +314,7 @@ void Tracker::ClearPatternNum(int val) {
 };
 
 void Tracker::TogglePlayStop() {
-  isPlaying++;
-  if (isPlaying > 1)
-    isPlaying = 0;
+  isPlaying = !isPlaying;
 };
 
 //TBD
@@ -377,7 +362,7 @@ void Tracker::PastePatternAll() {
 void Tracker::ClearAll(int val) {
   selectedTrack = 0;
   currentPattern = 0;
-  isPlaying = 0;
+  isPlaying = true;
   pressedOnce = false;
   allPatternPlay = false;
   String("DRUMS").toCharArray(oledInstString, 6);
@@ -393,5 +378,5 @@ void Tracker::ClearAll(int val) {
     voices[j].SetVolume(2);
     voices[j].SetOctave(1);
   }
-  patternLength = 64 + (64 * val);
+  patternLength = 32 + (32 * val);
 };
