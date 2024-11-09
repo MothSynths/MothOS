@@ -125,15 +125,6 @@ int Voice::UpdateVoice() {
   }
 
   if (volumeNum == 3) {
-    int limit = 3000;
-    if (abs(sample) > limit) {
-      if (sample > 0) {
-        sample = limit;
-      } else {
-        sample = limit * -1;
-      }
-      sample = (sample * 3);
-    }
   }
 
   if (lowPassMult > 0) {
@@ -496,10 +487,14 @@ void Voice::SetVolume(int val) {
   volumeNum = val;
   switch (val) {
     case 0:
-      volume = 1;
+      volume = 0;
       break;
     case 1:
-      volume = 2;
+      if (volume == 2) {
+        volume = 3;
+      } else {
+        volume = 2;
+      }
       break;
     case 2:
       volume = 3;
