@@ -7,10 +7,11 @@ public:
   int arpNum;
   int delay;
   int octave;
+  bool overdrive;
   int recOctave;
   Voice();
   int UpdateVoice();
-    int phaserMult;
+  int phaserMult;
   int lowPassMult;
   int reverbMult;
   int chordMult;
@@ -27,6 +28,7 @@ public:
   void ResetEffects();
   int volume;
   bool soloMute;
+  bool mute;
 
 private:
   int noteFreqLookup[48];

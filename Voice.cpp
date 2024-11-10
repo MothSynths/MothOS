@@ -140,10 +140,19 @@ int Voice::UpdateVoice() {
     }
     sample = rSample / 2;
   }
-  if (soloMute) {
+  if (soloMute || mute) {
     sample = 0;
   }
 
+  if (overdrive) {
+    sample = sample * 10 / 7;
+    int limit = 5000;
+    if (sample > limit) {
+      sample = limit;
+    } else if (sample < -limit) {
+      sample = -limit;
+    }
+  }
   return sample;
 }
 
@@ -487,7 +496,7 @@ void Voice::SetVolume(int val) {
   volumeNum = val;
   switch (val) {
     case 0:
-      volume = 0;
+      mute = !mute;
       break;
     case 1:
       if (volume == 2) {
@@ -495,6 +504,9 @@ void Voice::SetVolume(int val) {
       } else {
         volume = 2;
       }
+      break;
+    case 2:
+      overdrive = !overdrive;
       break;
   }
 }
