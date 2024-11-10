@@ -25,6 +25,8 @@ public:
   void SetEnvelopeLength(int val);
   void SetEffectNum(int val);
   void ResetEffects();
+  int volume;
+  bool soloMute;
 
 private:
   int noteFreqLookup[48];
@@ -58,7 +60,6 @@ private:
   long sampleIndex;
   int sampleIndexNext;
   int subSampleIndex;
-  int volume;
   int volumeNum;
   int ReadWaveform();
   int ReadDrumWaveform();

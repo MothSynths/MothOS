@@ -56,7 +56,7 @@ Voice::Voice() {
   sampleIndex = kick1Length * 1000;
   SetEnvelopeLength(1);
 
-  SetVolume(2);
+  volume = 2;
   ResetEffects();
 
   for (int i = 0; i <= 100; i++) {
@@ -127,9 +127,6 @@ int Voice::UpdateVoice() {
     sample /= whoosh + 1;
   }
 
-  if (volumeNum == 3) {
-  }
-
   if (lowPassMult > 0) {
     for (int i = 1; i < 4 * lowPassMult; i++) {
       sample += GetHistorySample(i);
@@ -145,6 +142,9 @@ int Voice::UpdateVoice() {
       rSample += GetHistorySample(i * 450 * reverbMult);
     }
     sample = rSample / 2;
+  }
+  if (soloMute) {
+    sample = 0;
   }
 
   return sample;
@@ -484,12 +484,6 @@ void Voice::SetVolume(int val) {
       } else {
         volume = 2;
       }
-      break;
-    case 2:
-      volume = 3;
-      break;
-    case 3:
-      volume = 3;
       break;
   }
 }

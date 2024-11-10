@@ -131,10 +131,12 @@ void Tracker::SetCommand(char command, int val) {
       break;
     case 'V':
       if (val == 3) {
-        BuildOLEDHintString(String("Overdrive"));
+        SoloTrack(false);
+
+      } else {
+        SetVolume(val);
+        BuildOLEDHintString(String("Volume: " + String(voices[selectedTrack].volume)));
       }
-      SetVolume(val);
-      BuildOLEDHintString(String("Volume: " + String(val + 1)));
       break;
     case 'D':
       SetEffect(val + 4);
@@ -243,6 +245,28 @@ void Tracker::SetCommand(char command, int val) {
   }
 }
 
+void Tracker::SoloTrack(bool repeat) {
+  if (!repeat) {
+    solo = !solo;
+  }
+
+  if (solo) {
+    for (int i = 0; i < 4; i++) {
+      if (i == selectedTrack) {
+        voices[i].soloMute = false;
+      } else {
+        voices[i].soloMute = true;
+      }
+    }
+    BuildOLEDHintString(String(selectedTrack));
+  } else {
+    for (int i = 0; i < 4; i++) {
+      voices[i].soloMute = false;
+    }
+    BuildOLEDHintString(String("Solo Off"));
+  }
+}
+
 void Tracker::SetEffect(int val) {
   voices[selectedTrack].SetEffectNum(val);
 };
@@ -283,11 +307,11 @@ void Tracker::SetNote(int val, int track) {
   } else {
     voices[track].SetNote(val, false, -1, currentVoice);
   }
-  
 };
 
 void Tracker::SetTrackNum(int val) {
   selectedTrack = val;
+  SoloTrack(true);
 };
 
 void Tracker::ClearTrackNum(int val) {
