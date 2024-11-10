@@ -70,7 +70,7 @@ int Tracker::UpdateTracker() {
 
   for (int i = 0; i < 4; i++) {
     voices[i].bps = bps;
-    int samp = voices[i].UpdateVoice() / (3 + masterVolume * 5);
+    int samp = voices[i].UpdateVoice() / (2 + masterVolume * 5);
     sample += samp;
     lastSamples[i] = samp;
   }
