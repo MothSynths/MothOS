@@ -53,7 +53,7 @@ Voice::Voice() {
   sampleIndex = kick1Length * 1000;
   SetEnvelopeLength(1);
 
-  SetVolume(2);
+  volume = 2;
   ResetEffects();
 
   for (int i = 0; i <= 100; i++) {
@@ -124,9 +124,6 @@ int Voice::UpdateVoice() {
     sample /= whoosh + 1;
   }
 
-  if (volumeNum == 3) {
-  }
-
   if (lowPassMult > 0) {
     for (int i = 1; i < 4 * lowPassMult; i++) {
       sample += GetHistorySample(i);
@@ -142,6 +139,9 @@ int Voice::UpdateVoice() {
       rSample += GetHistorySample(i * 450 * reverbMult);
     }
     sample = rSample / 2;
+  }
+  if (soloMute) {
+    sample = 0;
   }
 
   return sample;
@@ -174,39 +174,39 @@ int Voice::ReadWaveform() {
       break;
     case 3:
       sampleLen = instrument2Length;
-        sample = instrument2[sampleIndexReduced];
+      sample = instrument2[sampleIndexReduced];
       break;
     case 4:
       sampleLen = instrument3Length;
-        sample = instrument3[sampleIndexReduced];
+      sample = instrument3[sampleIndexReduced];
       break;
     case 5:
       sampleLen = instrument4Length;
-        sample = instrument4[sampleIndexReduced];
+      sample = instrument4[sampleIndexReduced];
       break;
     case 6:
       sampleLen = instrument5Length;
-        sample = instrument5[sampleIndexReduced];
+      sample = instrument5[sampleIndexReduced];
       break;
     case 7:
       sampleLen = instrument6Length;
-        sample = instrument6[sampleIndexReduced];
+      sample = instrument6[sampleIndexReduced];
       break;
     case 8:
       sampleLen = instrument7Length;
-        sample = instrument7[sampleIndexReduced];
+      sample = instrument7[sampleIndexReduced];
       break;
     case 9:
       sampleLen = instrument8Length;
-        sample = instrument8[sampleIndexReduced];
+      sample = instrument8[sampleIndexReduced];
       break;
     case 10:
       sampleLen = instrument9Length;
-        sample = instrument9[sampleIndexReduced];
+      sample = instrument9[sampleIndexReduced];
       break;
     case 11:
       sampleLen = instrument10Length;
-        sample = instrument10[sampleIndexReduced];
+      sample = instrument10[sampleIndexReduced];
       break;
   }
 
@@ -495,12 +495,6 @@ void Voice::SetVolume(int val) {
       } else {
         volume = 2;
       }
-      break;
-    case 2:
-      volume = 3;
-      break;
-    case 3:
-      volume = 3;
       break;
   }
 }

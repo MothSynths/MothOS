@@ -30,6 +30,7 @@ public:
   int currentVoice = 0;
   int tracks[4][512];
   int trackOctaves[4][512];
+  bool solo;
 
 private:
   int lastNoteTrack;
@@ -40,6 +41,7 @@ private:
   int barCount;
   float lastMillis;
   float soundVelocity;
+  void SoloTrack(bool repeat);
   int bpms[4];
   int trackInstruments[4][512];
   int patternCopy[4][128];
