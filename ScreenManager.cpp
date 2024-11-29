@@ -108,10 +108,10 @@ bool ScreenManager::UpdateInstructionsScreen(Tracker &tracker, U8G2_SSD1306_128X
         screen.drawRFrame(x * 32, y * 16, 31, 16, 2);
       }
     }
-    screen.drawStr(xs * 0 + marginleft, ys * 0 + margintop, "VOL1");
-    screen.drawStr(xs * 1 + marginleft, ys * 0 + margintop, "VOL2");
-    screen.drawStr(xs * 2 + marginleft, ys * 0 + margintop, "VOL3");
-    screen.drawStr(xs * 3 + marginleft, ys * 0 + margintop, "OVDR");
+    screen.drawStr(xs * 0 + marginleft, ys * 0 + margintop, "MUTE");
+    screen.drawStr(xs * 1 + marginleft, ys * 0 + margintop, "VOL");
+    screen.drawStr(xs * 2 + marginleft, ys * 0 + margintop, "OVDR");
+    screen.drawStr(xs * 3 + marginleft, ys * 0 + margintop, "SOLO");
     screen.drawStr(xs * 0 + marginleft, ys * 1 + margintop, "ENV1");
     screen.drawStr(xs * 1 + marginleft, ys * 1 + margintop, "ENV2");
     screen.drawStr(xs * 2 + marginleft, ys * 1 + margintop, "ENV3");
