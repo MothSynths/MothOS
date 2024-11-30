@@ -21,6 +21,21 @@ Tracker::Tracker() {
   ClearAll(0);
 }
 
+void Tracker::OnMidiTick() {
+  midiTicks++;
+  if (midiTicks >= 6) {
+    midiTicks = 0;
+    onMidiTick = true;
+    midiClock = true;
+  }
+}
+
+void Tracker::OnMidiStart()
+{
+  trackIndex = 0;
+  currentPattern = 0;
+}
+
 int Tracker::UpdateTracker() {
 
   float curTime = millis();
@@ -37,7 +52,8 @@ int Tracker::UpdateTracker() {
     noteTime += dbps;
   }
 
-  if (noteTime > 250) {
+  if ((!midiClock && noteTime > 250) || (midiClock && onMidiTick)) {
+    onMidiTick = false;
     barCount++;
     if (barCount > 3) {
       tempoBlink = 30;

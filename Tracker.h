@@ -21,6 +21,11 @@ public:
   int currentPattern;
   int patternLength;
   int trackIndex;
+  void OnMidiTick();
+  void OnMidiStart();
+  bool onMidiTick;
+  bool midiClock;
+  int midiTicks;
   Voice voices[4];
   Tracker();
   int UpdateTracker();

@@ -261,7 +261,7 @@ int Voice::ReadWaveform() {
     }
   }
 
-  sampleIndex += baseFreqLocal;
+  sampleIndex += baseFreqLocal*2;
 
   if (sampleIndex >= sampleLen * 1000) {
 
@@ -338,7 +338,7 @@ int Voice::ReadDrumWaveform() {
     if (recOctave > -1)
       oct = recOctave + 1;
 
-    sampleIndex += oct * 500;
+    sampleIndex += oct * 1000;
     if (pitchMult > 0) {
       if (pitchDur > 0) {
         pitchDur -= pitchMult;
@@ -497,9 +497,9 @@ void Voice::ResetEffects() {
 }
 
 void Voice::UpdateHistory(int sample) {
-  sampleHistory[sampleHistoryIndex / 2] = sample;
+  sampleHistory[sampleHistoryIndex ] = sample;
   sampleHistoryIndex++;
-  if (sampleHistoryIndex > 24000 - 2) {
+  if (sampleHistoryIndex > 12000 - 2) {
     sampleHistoryIndex = 0;
   }
 }
@@ -508,7 +508,7 @@ int Voice::GetHistorySample(int backoffset) {
   int ind = sampleHistoryIndex - backoffset;
 
   if (ind < 0) {
-    ind = 24000 + ind;
+    ind = 12000 + ind;
   }
-  return sampleHistory[ind / 2];
+  return sampleHistory[ind];
 }
