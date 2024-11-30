@@ -1,3 +1,9 @@
+#include <MIDI.h>
+#define RX_PIN 40  // GPIO 40 for MIDI input
+#define TX_PIN -1  // TX pin not used
+// Create a MIDI object
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
+
 //IMPORTANT: COMMENT OUT ISOLED BELOW IF NOT USING ACTUAL OLED
 #define ISOLED
 
@@ -35,7 +41,7 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 //i2s sound
 #include <ESP_I2S.h>
 I2SClass i2s;
-const int sampleRate = 44100;  // sample rate in Hz
+const int sampleRate = 22050;  // sample rate in Hz
 
 //OLED init
 #include "ScreenManager.h"
@@ -52,6 +58,7 @@ TaskHandle_t Task2;  //OLED requires second core
 char ledCommandOLED;
 String noteChars[12];
 int volumeBars[4];
+int lastVol;
 bool trackerUI = true;
 bool debounce;
 bool selectingMode = true;
@@ -216,8 +223,10 @@ void loop() {
   // New i2s only wants to write bytes out, so we need to split the sample before writing
   // Copy the high and low bytes of our 16bit sample into a buffer and write that
   byte outbuf[2];
-  outbuf[0] = lowByte(tracker.sample);
-  outbuf[1] = highByte(tracker.sample);
+  int outVol = (tracker.sample + (lastVol / 2)) ;
+  lastVol = tracker.sample;
+  outbuf[0] = lowByte(outVol);
+  outbuf[1] = highByte(outVol);
   i2s.write(outbuf, 2);
 
   int tempoBlink = tracker.tempoBlink;
