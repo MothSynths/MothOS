@@ -66,7 +66,7 @@ void setup() {
   noteChars[10] = String("A#");
   noteChars[11] = String("B");
 
-  #ifdef ISOLED
+#ifdef ISOLED
   xTaskCreatePinnedToCore(
     Task2Loop,
     "Core 0 task",
@@ -75,7 +75,7 @@ void setup() {
     1,
     &Task2,
     0);
-  #endif
+#endif
   keypad.setDebounceTime(0);
 
   i2s.setPins(6, 7, 5);
@@ -100,7 +100,11 @@ void loop() {
   }
 
   if (trackCommand != ' ') {
-    tracker.SetCommand(trackCommand, trackCommandArgument);
+    if (trackCommand == 'N') {
+      screenManager.OnInput(trackCommandArgument,tracker);
+    } else {
+      tracker.SetCommand(trackCommand, trackCommandArgument);
+    }
   }
 
   int sample = tracker.UpdateTracker();

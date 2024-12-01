@@ -29,7 +29,8 @@ int Tracker::UpdateTracker() {
 
   float dbps = delta * bps;
 
-  noteTime += dbps;
+  if (isPlaying)
+    noteTime += dbps;
 
   if (noteTime > 250) {
     barCount++;
@@ -104,7 +105,7 @@ void Tracker::SetCommand(char command, int val) {
         tempoBlink = 30;
       }
       pressedOnce = true;
-      SetNote(val, selectedTrack);
+      //SetNote(val, selectedTrack);
       break;
     case 'O':
       SetOctave(val);
@@ -140,13 +141,13 @@ void Tracker::SetCommand(char command, int val) {
         if (val == 2) {
           if (voices[selectedTrack].overdrive) {
             BuildOLEDHintString(String("ODrv On"));
-          }else{
+          } else {
             BuildOLEDHintString(String("ODrv Off"));
           }
         } else if (val == 0) {
           if (voices[selectedTrack].mute) {
             BuildOLEDHintString(String("Mute"));
-          }else{
+          } else {
             BuildOLEDHintString(String("Unmute"));
           }
         } else {
@@ -207,9 +208,9 @@ void Tracker::SetCommand(char command, int val) {
     case 'P':
       TogglePlayStop();
       if (isPlaying) {
-        BuildOLEDHintString(String("Rec On"));
+        BuildOLEDHintString(String("Play On"));
       } else {
-        BuildOLEDHintString(String("Rec Off"));
+        BuildOLEDHintString(String("Play Off"));
       }
       break;
     case 'I':
@@ -318,15 +319,13 @@ void Tracker::SetVolume(int val) {
 };
 
 void Tracker::SetNote(int val, int track) {
-  if (isPlaying && pressedOnce) {
-    //one behind trick
-    tracks[track][trackIndex] = val + 1;
-    trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
-    trackInstruments[track][trackIndex] = currentVoice;
-    lastNoteTrackIndex = trackIndex % patternLength;
-  } else {
-    voices[track].SetNote(val, false, -1, currentVoice);
-  }
+
+  //one behind trick
+  tracks[track][trackIndex] = val + 1;
+  trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
+  trackInstruments[track][trackIndex] = currentVoice;
+  lastNoteTrackIndex = trackIndex % patternLength;
+  voices[track].SetNote(val, false, -1, currentVoice);
 };
 
 void Tracker::SetTrackNum(int val) {
@@ -359,6 +358,8 @@ void Tracker::ClearPatternNum(int val) {
 
 void Tracker::TogglePlayStop() {
   isPlaying = !isPlaying;
+  noteTime=0;
+  trackIndex=0;
 };
 
 //TBD
@@ -407,7 +408,7 @@ void Tracker::ClearAll(int val) {
   selectedTrack = 0;
   currentPattern = 0;
   isPlaying = true;
-  pressedOnce = false;
+  pressedOnce = true;
   allPatternPlay = false;
   currentVoice = 0;
   String("DRUMS").toCharArray(oledInstString, 6);
