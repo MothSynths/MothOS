@@ -31,6 +31,7 @@ public:
   int tracks[4][512];
   int trackOctaves[4][512];
   bool solo;
+  void SetNote(int val, int track);
 
 private:
   int lastNoteTrack;
@@ -48,7 +49,7 @@ private:
   int patternCopyOctaves[4][128];
   int patternCopyInstruments[4][128];
   void BuildOLEDHintString(String string);
-  void SetNote(int val, int track);
+  
   void SetEffect(int val);
   void SetBPM(int val);
   void SetDelay(int val);
