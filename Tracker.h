@@ -32,6 +32,7 @@ public:
   int trackOctaves[4][512];
   bool solo;
   void SetNote(int val, int track);
+  bool trackerUI;
 
 private:
   int lastNoteTrack;

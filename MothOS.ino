@@ -52,7 +52,8 @@ String noteChars[12];
 int volumeBars[4];
 
 void setup() {
-
+  tracker.trackerUI=false;
+  screenManager.trackerUI=false;
   noteChars[0] = String("C_");
   noteChars[1] = String("C#");
   noteChars[2] = String("D_");

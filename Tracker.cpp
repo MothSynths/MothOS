@@ -105,7 +105,9 @@ void Tracker::SetCommand(char command, int val) {
         tempoBlink = 30;
       }
       pressedOnce = true;
-      //SetNote(val, selectedTrack);
+      if (!trackerUI) {
+        SetNote(val, selectedTrack);
+      }
       break;
     case 'O':
       SetOctave(val);
@@ -325,7 +327,8 @@ void Tracker::SetNote(int val, int track) {
   trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
   trackInstruments[track][trackIndex] = currentVoice;
   lastNoteTrackIndex = trackIndex % patternLength;
-  voices[track].SetNote(val, false, -1, currentVoice);
+  if (!trackerUI && isPlaying == false)
+    voices[track].SetNote(val, false, -1, currentVoice);
 };
 
 void Tracker::SetTrackNum(int val) {
@@ -358,8 +361,8 @@ void Tracker::ClearPatternNum(int val) {
 
 void Tracker::TogglePlayStop() {
   isPlaying = !isPlaying;
-  noteTime=0;
-  trackIndex=0;
+  noteTime = 0;
+  trackIndex = 0;
 };
 
 //TBD
@@ -408,7 +411,7 @@ void Tracker::ClearAll(int val) {
   selectedTrack = 0;
   currentPattern = 0;
   isPlaying = true;
-  pressedOnce = true;
+  pressedOnce = trackerUI;
   allPatternPlay = false;
   currentVoice = 0;
   String("DRUMS").toCharArray(oledInstString, 6);
