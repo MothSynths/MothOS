@@ -12,6 +12,8 @@ public:
   void ProcessFunctionClick(int input);
   void ProcessClick(int input);
   void EndFrame();
+  int ConvertToInt(char rawInput);
+
 
 private:
   bool fnc[4];

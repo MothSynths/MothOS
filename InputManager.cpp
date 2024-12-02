@@ -66,6 +66,52 @@ void InputManager::UpdateInput(char rawInput) {
   }
 }
 
+
+
+int InputManager::ConvertToInt(char rawInput) {
+  switch (rawInput) {
+    case 'A':
+      return (0);
+      break;
+    case 'B':
+      return (1);
+      break;
+    case 'C':
+      return (2);
+      break;
+    case 'D':
+      return (3);
+      break;
+
+    case 'E':
+      return (4);
+      break;
+    case 'F':
+      return (5);
+      break;
+    case 'G':
+      return (6);
+      break;
+    case 'H':
+      return (7);
+      break;
+
+    case 'I':
+      return (8);
+      break;
+    case 'J':
+      return (9);
+      break;
+    case 'K':
+      return (10);
+      break;
+    case 'L':
+      return (11);
+      break;
+  }
+  return 0;
+}
+
 void InputManager::ClearFunctions() {
   for (int i = 0; i < 4; i++)
     fnc[i] = false;
