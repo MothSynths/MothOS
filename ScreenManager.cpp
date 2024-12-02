@@ -36,9 +36,14 @@
 ScreenManager::ScreenManager() {
   cursorX = 0;
   cursorY = 0;
+  showIntro = true;
 }
 
 void ScreenManager::Update(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
+  if (showIntro){
+    UpdateIntro(screen);
+    return;
+  }
   bool isShowingInstructions = UpdateInstructionsScreen(tracker, screen, ledCommandOLED, volumeBars, noteChars);
   if (!isShowingInstructions) {
     if (trackerUI) {
@@ -55,6 +60,20 @@ void ScreenManager::Update(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C
       screen.drawStr(4, 16, tracker.hint);
     }
   }
+}
+
+void ScreenManager::UpdateIntro(U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen) {
+  screen.setFont(u8g2_font_6x13_tf);
+  
+  char buf32[22];
+  String s = String("MothOS 1.1.0");
+  s.toCharArray(buf32, 21);
+  screen.drawStr(26, 22, buf32);
+
+  s = String("F1=Live F2=Tracker");
+  s.toCharArray(buf32, 21);
+  screen.drawStr(12, 38, buf32);
+  
 }
 
 bool ScreenManager::UpdateInstructionsScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
