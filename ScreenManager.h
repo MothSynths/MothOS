@@ -10,6 +10,7 @@ public:
   void OnNote(int input, Tracker &tracker);
   int cursorMode;
   void MoveCursor(int dir);
+  bool trackerUI;
 private:
   int lastNote;
   int cursorX;
@@ -18,6 +19,7 @@ private:
   int lastNoteBeat;
   int noteBeatTime;
   void UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]);
+  void UpdateMainScreenLive(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]);
   bool UpdateInstructionsScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]);
 };
 

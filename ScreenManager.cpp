@@ -41,7 +41,11 @@ ScreenManager::ScreenManager() {
 void ScreenManager::Update(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
   bool isShowingInstructions = UpdateInstructionsScreen(tracker, screen, ledCommandOLED, volumeBars, noteChars);
   if (!isShowingInstructions) {
-    UpdateMainScreen(tracker, screen, ledCommandOLED, volumeBars, noteChars);
+    if (trackerUI) {
+      UpdateMainScreen(tracker, screen, ledCommandOLED, volumeBars, noteChars);
+    } else {
+      UpdateMainScreenLive(tracker, screen, ledCommandOLED, volumeBars, noteChars);
+    }
     if (tracker.hintTime > 0) {
       screen.setColorIndex(0);
       screen.drawBox(0, 0, 126, 22);
@@ -183,9 +187,11 @@ void ScreenManager::MoveCursor(int dir) {
 
 void ScreenManager::OnInput(int input, Tracker &tracker) {
   int patternOffset = tracker.currentPattern * tracker.patternLength;
+
   if (cursorMode == 1) {
     return;
   }
+
   if (input == 6) {
     int oldTrackIndex = tracker.trackIndex;
     tracker.trackIndex = cursorX + patternOffset;
@@ -193,6 +199,7 @@ void ScreenManager::OnInput(int input, Tracker &tracker) {
     tracker.trackIndex = oldTrackIndex;
     return;
   }
+
   if (input == 7) {
     int oldTrackIndex = tracker.trackIndex;
     tracker.tracks[cursorY][cursorX] = 0;
@@ -203,21 +210,25 @@ void ScreenManager::OnInput(int input, Tracker &tracker) {
   if (input == 2) {
     cursorX++;
   }
+
   if (input == 0) {
     cursorX--;
   }
+
   if (input == 1) {
     cursorY++;
     if (cursorY > 3)
       cursorY = 3;
     tracker.selectedTrack = cursorY;
   }
+
   if (input == 5) {
     cursorY--;
     if (cursorY < 0)
       cursorY = 0;
     tracker.selectedTrack = cursorY;
   }
+
   if (input == 3) {
     cursorMode = 1;
   }
@@ -225,7 +236,7 @@ void ScreenManager::OnInput(int input, Tracker &tracker) {
 
 void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
   screen.setFont(u8g2_font_6x13_tf);
-  int xOff=4;
+  int xOff = 4;
   char buf[6];
   char buf32[22];
   String s = String(tracker.currentPattern + 1);
@@ -235,11 +246,11 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
   if (!tracker.voices[tracker.selectedTrack].samplerMode) {
     s = String(tracker.oledInstString);
     s.toCharArray(buf, 6);
-    screen.drawStr(30+xOff, 44, buf);
+    screen.drawStr(30 + xOff, 44, buf);
   } else {
     s = String("SAMP");
     s.toCharArray(buf, 6);
-    screen.drawStr(30+xOff, 44, buf);
+    screen.drawStr(30 + xOff, 44, buf);
   }
 
   if (cursorMode == 0) {
@@ -248,7 +259,7 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
     s = String("F1=Exit, F2,F3=Move");
   }
   s.toCharArray(buf32, 22);
-  screen.drawStr(0+xOff, 56, buf32);
+  screen.drawStr(0 + xOff, 56, buf32);
 
   int patternOffset = tracker.currentPattern * tracker.patternLength;
   int note = tracker.tracks[cursorY][patternOffset + cursorX] - 1;
@@ -256,7 +267,7 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
   String(noteChars[note] + String(oct)).toCharArray(buf, 4);
 
   if (note >= 0)
-    screen.drawStr(64+xOff, 44, buf);
+    screen.drawStr(64 + xOff, 44, buf);
 
   for (int i = 0; i < 4; i++) {
 
@@ -266,22 +277,22 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
       int val = tracker.tracks[i][jp];
 
       if (j % 4 == 0) {
-        screen.drawBox(j * 4 + 1+xOff, i * 8 + 4, 1, 1);
+        screen.drawBox(j * 4 + 1 + xOff, i * 8 + 4, 1, 1);
       } else {
       }
       if (val == 0) {
 
       } else {
-        screen.drawBox(j * 4 + 1+xOff, i * 8 + 1, 2, 6);
+        screen.drawBox(j * 4 + 1 + xOff, i * 8 + 1, 2, 6);
       }
       if (jp == tracker.trackIndex) {
-        screen.drawBox(j * 4+xOff, i * 8, 1, 8);
+        screen.drawBox(j * 4 + xOff, i * 8, 1, 8);
       }
       if (cursorX == j && cursorY == i) {
         if (cursorMode == 0) {
-          screen.drawFrame(j * 4+xOff, i * 8, 4, 8);
+          screen.drawFrame(j * 4 + xOff, i * 8, 4, 8);
         } else {
-          screen.drawBox(j * 4+xOff, i * 8, 4, 8);
+          screen.drawBox(j * 4 + xOff, i * 8, 4, 8);
         }
       }
     }
@@ -289,8 +300,8 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
   }
 }
 
-/*
-void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
+
+void ScreenManager::UpdateMainScreenLive(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
   char buffa[4];
   if (tracker.lastNoteTrackIndex == lastNoteBeat) {
     if (noteBeatTime > 0) {
@@ -369,7 +380,7 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
     s.toCharArray(buf, 6);
     screen.drawStr(4, 63, buf);
   }
-  
+
   char buf[6];
   String s = String(tracker.currentPattern + 1);
   s += "/4";
@@ -387,4 +398,3 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
     String("SAMP").toCharArray(buff, 6);
   screen.drawStr(4, 34, buff);
 }
-*/
