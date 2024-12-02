@@ -86,24 +86,44 @@ void setup() {
   screen.begin();
 }
 
+bool debounce;
 void loop() {
+  if (screenManager.cursorMode == 0) {
+    inputManager.UpdateInput(keypad.getKey());
+    char note = inputManager.note;
+    char trackCommand = inputManager.trackCommand;
+    int trackCommandArgument = inputManager.trackCommandArgument;
+    char ledCommand = inputManager.ledCommand;
 
-  inputManager.UpdateInput(keypad.getKey());
-  char note = inputManager.note;
-  char trackCommand = inputManager.trackCommand;
-  int trackCommandArgument = inputManager.trackCommandArgument;
-  char ledCommand = inputManager.ledCommand;
+    if (ledCommand != ' ') {
+      ledCommandOLED = ledCommand;
+      ledManager.SetCommand(ledCommand);
+    }
 
-  if (ledCommand != ' ') {
-    ledCommandOLED = ledCommand;
-    ledManager.SetCommand(ledCommand);
-  }
+    if (trackCommand != ' ') {
+      if (trackCommand == 'N') {
+        screenManager.OnInput(trackCommandArgument, tracker);
+      } else {
+        tracker.SetCommand(trackCommand, trackCommandArgument);
+      }
+    }
+    ledManager.UpdateLed();
+  } else {
+    char trackerInput = keypad.getKey();
+    if (trackerInput && !debounce) {
+      if (trackerInput == 'M') {
+        screenManager.cursorMode = 0;
+      }else if (trackerInput == 'N') {
+        screenManager.MoveCursor(-1);
+      }else if (trackerInput == 'O') {
+        screenManager.MoveCursor(1);  
+      } else {
+        screenManager.OnNote(inputManager.ConvertToInt(trackerInput), tracker);
+      }
 
-  if (trackCommand != ' ') {
-    if (trackCommand == 'N') {
-      screenManager.OnInput(trackCommandArgument,tracker);
+      debounce = true;
     } else {
-      tracker.SetCommand(trackCommand, trackCommandArgument);
+      debounce = false;
     }
   }
 
@@ -121,7 +141,7 @@ void loop() {
     ledManager.SetLit(tempoBlink, tracker.selectedTrack);
 
   ledManager.SetPattern(tracker.allPatternPlay, tracker.currentPattern);
-  ledManager.UpdateLed();
+
   inputManager.EndFrame();
 }
 
