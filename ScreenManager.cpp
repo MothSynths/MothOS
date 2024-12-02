@@ -227,14 +227,28 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
   screen.setFont(u8g2_font_6x13_tf);
 
   char buf[6];
+  char buf32[22];
   String s = String(tracker.currentPattern + 1);
   s += "/4";
   s.toCharArray(buf, 6);
   screen.drawStr(0, 44, buf);
+  if (!tracker.voices[tracker.selectedTrack].samplerMode) {
+    s = String(tracker.oledInstString);
+    s.toCharArray(buf, 6);
+    screen.drawStr(30, 44, buf);
+  } else {
+    s = String("SAMP");
+    s.toCharArray(buf, 6);
+    screen.drawStr(30, 44, buf);
+  }
 
-  s = String(tracker.oledInstString);
-  s.toCharArray(buf, 6);
-  screen.drawStr(30, 44, buf);
+  if (cursorMode == 0) {
+    s = String("D=Notes, A,B,C,E=Move");
+  } else {
+    s = String("F1=Exit, F2,F3=Move");
+  }
+  s.toCharArray(buf32, 22);
+  screen.drawStr(0, 56, buf32);
 
   int patternOffset = tracker.currentPattern * tracker.patternLength;
   int note = tracker.tracks[cursorY][patternOffset + cursorX] - 1;
@@ -267,7 +281,7 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
         if (cursorMode == 0) {
           screen.drawFrame(j * 4, i * 8, 4, 8);
         } else {
-          screen.drawFrame(j * 4, i * 8, 4, 4);
+          screen.drawBox(j * 4, i * 8, 4, 8);
         }
       }
     }
