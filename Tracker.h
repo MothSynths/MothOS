@@ -33,7 +33,7 @@ public:
   bool solo;
   void SetNote(int val, int track);
   bool trackerUI;
-
+  void ClearAll(int val);
 private:
   int lastNoteTrack;
   float bpm;
@@ -50,7 +50,6 @@ private:
   int patternCopyOctaves[4][128];
   int patternCopyInstruments[4][128];
   void BuildOLEDHintString(String string);
-  
   void SetEffect(int val);
   void SetBPM(int val);
   void SetDelay(int val);
@@ -69,7 +68,6 @@ private:
   void CopyPattern();
   void PastePattern();
   void PastePatternAll();
-  void ClearAll(int val);
   int UpdateVoices();
   int heldNotes[4];
   int heldInsturments[4];

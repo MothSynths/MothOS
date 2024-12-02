@@ -29,15 +29,19 @@ int Tracker::UpdateTracker() {
 
   float dbps = delta * bps;
 
-  if (isPlaying)
+  if (trackerUI) {
+    if (isPlaying)
+      noteTime += dbps;
+  } else {
     noteTime += dbps;
+  }
 
   if (noteTime > 250) {
     barCount++;
     if (barCount > 3) {
       tempoBlink = 30;
       barCount = 0;
-      if (!pressedOnce) {
+      if (!pressedOnce && !trackerUI) {
         SetNote(7, 0);
       }
     }
@@ -103,6 +107,7 @@ void Tracker::SetCommand(char command, int val) {
         lastMillis = millis();
         barCount = 0;
         tempoBlink = 30;
+        isPlaying = true;
       }
       pressedOnce = true;
       if (!trackerUI) {
@@ -323,12 +328,22 @@ void Tracker::SetVolume(int val) {
 void Tracker::SetNote(int val, int track) {
 
   //one behind trick
-  tracks[track][trackIndex] = val + 1;
-  trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
-  trackInstruments[track][trackIndex] = currentVoice;
-  lastNoteTrackIndex = trackIndex % patternLength;
-  if (!trackerUI && isPlaying == false)
+  if (!trackerUI) {
+    if (isPlaying) {
+      tracks[track][trackIndex] = val + 1;
+      trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
+      trackInstruments[track][trackIndex] = currentVoice;
+      lastNoteTrackIndex = trackIndex % patternLength;
+    } else {
+      voices[track].SetNote(val, false, -1, currentVoice);
+    }
+  } else {
+    tracks[track][trackIndex] = val + 1;
+    trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
+    trackInstruments[track][trackIndex] = currentVoice;
+    lastNoteTrackIndex = trackIndex % patternLength;
     voices[track].SetNote(val, false, -1, currentVoice);
+  }
 };
 
 void Tracker::SetTrackNum(int val) {
@@ -410,8 +425,8 @@ void Tracker::PastePatternAll() {
 void Tracker::ClearAll(int val) {
   selectedTrack = 0;
   currentPattern = 0;
-  isPlaying = true;
-  pressedOnce = trackerUI;
+  isPlaying = trackerUI;
+  pressedOnce = false;
   allPatternPlay = false;
   currentVoice = 0;
   String("DRUMS").toCharArray(oledInstString, 6);

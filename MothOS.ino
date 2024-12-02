@@ -50,10 +50,41 @@ TaskHandle_t Task2;  //OLED requires second core
 char ledCommandOLED;
 String noteChars[12];
 int volumeBars[4];
+bool trackerUI = true;
+bool debounce;
+bool selectingMode = true;
 
 void setup() {
-  tracker.trackerUI=false;
-  screenManager.trackerUI=false;
+
+#ifdef ISOLED
+  xTaskCreatePinnedToCore(
+    Task2Loop,
+    "Core 0 task",
+    10000,
+    NULL,
+    1,
+    &Task2,
+    0);
+#endif
+  screen.begin();
+  while (selectingMode) {
+    char trackerInput = keypad.getKey();
+    if (trackerInput == 'M') {
+      trackerUI = false;
+      selectingMode = false;
+    }
+    if (trackerInput == 'N') {
+      trackerUI = true;
+      selectingMode = false;
+    }
+    delay(1);
+  }
+
+  screenManager.showIntro = false;
+
+  tracker.trackerUI = trackerUI;
+  screenManager.trackerUI = trackerUI;
+  tracker.ClearAll(0);
   noteChars[0] = String("C_");
   noteChars[1] = String("C#");
   noteChars[2] = String("D_");
@@ -67,16 +98,7 @@ void setup() {
   noteChars[10] = String("A#");
   noteChars[11] = String("B");
 
-#ifdef ISOLED
-  xTaskCreatePinnedToCore(
-    Task2Loop,
-    "Core 0 task",
-    10000,
-    NULL,
-    1,
-    &Task2,
-    0);
-#endif
+
   keypad.setDebounceTime(0);
 
   i2s.setPins(6, 7, 5);
@@ -84,10 +106,10 @@ void setup() {
     while (1) {};
   }
 
-  screen.begin();
+
 }
 
-bool debounce;
+
 void loop() {
   if (screenManager.cursorMode == 0) {
     inputManager.UpdateInput(keypad.getKey());
@@ -102,7 +124,7 @@ void loop() {
     }
 
     if (trackCommand != ' ') {
-      if (trackCommand == 'N') {
+      if (trackCommand == 'N' && trackerUI) {
         screenManager.OnInput(trackCommandArgument, tracker);
       } else {
         tracker.SetCommand(trackCommand, trackCommandArgument);
@@ -114,10 +136,10 @@ void loop() {
     if (trackerInput && !debounce) {
       if (trackerInput == 'M') {
         screenManager.cursorMode = 0;
-      }else if (trackerInput == 'N') {
+      } else if (trackerInput == 'N') {
         screenManager.MoveCursor(-1);
-      }else if (trackerInput == 'O') {
-        screenManager.MoveCursor(1);  
+      } else if (trackerInput == 'O') {
+        screenManager.MoveCursor(1);
       } else {
         screenManager.OnNote(inputManager.ConvertToInt(trackerInput), tracker);
       }
