@@ -40,7 +40,7 @@ ScreenManager::ScreenManager() {
 }
 
 void ScreenManager::Update(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
-  if (showIntro){
+  if (showIntro) {
     UpdateIntro(screen);
     return;
   }
@@ -64,7 +64,7 @@ void ScreenManager::Update(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C
 
 void ScreenManager::UpdateIntro(U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen) {
   screen.setFont(u8g2_font_6x13_tf);
-  
+
   char buf32[22];
   String s = String("MothOS 1.1.0");
   s.toCharArray(buf32, 21);
@@ -73,7 +73,6 @@ void ScreenManager::UpdateIntro(U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen) {
   s = String("F1=Live F2=Tracker");
   s.toCharArray(buf32, 21);
   screen.drawStr(12, 38, buf32);
-  
 }
 
 bool ScreenManager::UpdateInstructionsScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
@@ -272,10 +271,14 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
     screen.drawStr(30 + xOff, 44, buf);
   }
 
+  s = String("OC:" + String(tracker.voices[tracker.selectedTrack].octave));
+  s.toCharArray(buf, 6);
+  screen.drawStr(95 + xOff, 44, buf);
+
   if (cursorMode == 0) {
-    s = String("D=Notes, A,B,C,E=Move");
+    s = String("D:Place, A,B,C,E=CURS");
   } else {
-    s = String("F1=Exit, F2,F3=Move");
+    s = String("F1:Ex F2:< F3:> F4:O");
   }
   s.toCharArray(buf32, 22);
   screen.drawStr(0 + xOff, 56, buf32);
@@ -286,7 +289,7 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
   String(noteChars[note] + String(oct)).toCharArray(buf, 4);
 
   if (note >= 0)
-    screen.drawStr(64 + xOff, 44, buf);
+    screen.drawStr(70 + xOff, 44, buf);
 
   for (int i = 0; i < 4; i++) {
 
@@ -296,22 +299,22 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
       int val = tracker.tracks[i][jp];
 
       if (j % 4 == 0) {
-        screen.drawBox(j * 4 + 1 + xOff, i * 8 + 4, 1, 1);
+        screen.drawBox(j * 4 + 2 + xOff, i * 8 + 4, 1, 1);
       } else {
       }
       if (val == 0) {
 
       } else {
-        screen.drawBox(j * 4 + 1 + xOff, i * 8 + 1, 2, 6);
+        screen.drawBox(j * 4 + 1 + xOff, i * 8 + 1, 3, 6);
       }
       if (jp == tracker.trackIndex) {
         screen.drawBox(j * 4 + xOff, i * 8, 1, 8);
       }
       if (cursorX == j && cursorY == i) {
         if (cursorMode == 0) {
-          screen.drawFrame(j * 4 + xOff, i * 8, 4, 8);
+          screen.drawFrame(j * 4 + xOff, i * 8, 5, 8);
         } else {
-          screen.drawBox(j * 4 + xOff, i * 8, 4, 8);
+          screen.drawBox(j * 4 + xOff, i * 8, 5, 8);
         }
       }
     }

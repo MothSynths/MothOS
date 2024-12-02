@@ -105,8 +105,6 @@ void setup() {
   if (!i2s.begin(I2S_MODE_STD, sampleRate, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO)) {
     while (1) {};
   }
-
-
 }
 
 
@@ -140,6 +138,11 @@ void loop() {
         screenManager.MoveCursor(-1);
       } else if (trackerInput == 'O') {
         screenManager.MoveCursor(1);
+      } else if (trackerInput == 'P') {
+        tracker.voices[tracker.selectedTrack].octave++;
+        if (tracker.voices[tracker.selectedTrack].octave > 2) {
+          tracker.voices[tracker.selectedTrack].octave = 0;
+        }
       } else {
         screenManager.OnNote(inputManager.ConvertToInt(trackerInput), tracker);
       }
