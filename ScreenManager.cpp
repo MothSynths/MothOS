@@ -225,21 +225,21 @@ void ScreenManager::OnInput(int input, Tracker &tracker) {
 
 void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
   screen.setFont(u8g2_font_6x13_tf);
-
+  int xOff=4;
   char buf[6];
   char buf32[22];
   String s = String(tracker.currentPattern + 1);
   s += "/4";
   s.toCharArray(buf, 6);
-  screen.drawStr(0, 44, buf);
+  screen.drawStr(xOff, 44, buf);
   if (!tracker.voices[tracker.selectedTrack].samplerMode) {
     s = String(tracker.oledInstString);
     s.toCharArray(buf, 6);
-    screen.drawStr(30, 44, buf);
+    screen.drawStr(30+xOff, 44, buf);
   } else {
     s = String("SAMP");
     s.toCharArray(buf, 6);
-    screen.drawStr(30, 44, buf);
+    screen.drawStr(30+xOff, 44, buf);
   }
 
   if (cursorMode == 0) {
@@ -248,7 +248,7 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
     s = String("F1=Exit, F2,F3=Move");
   }
   s.toCharArray(buf32, 22);
-  screen.drawStr(0, 56, buf32);
+  screen.drawStr(0+xOff, 56, buf32);
 
   int patternOffset = tracker.currentPattern * tracker.patternLength;
   int note = tracker.tracks[cursorY][patternOffset + cursorX] - 1;
@@ -256,7 +256,7 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
   String(noteChars[note] + String(oct)).toCharArray(buf, 4);
 
   if (note >= 0)
-    screen.drawStr(64, 44, buf);
+    screen.drawStr(64+xOff, 44, buf);
 
   for (int i = 0; i < 4; i++) {
 
@@ -266,22 +266,22 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
       int val = tracker.tracks[i][jp];
 
       if (j % 4 == 0) {
-        screen.drawBox(j * 4 + 1, i * 8 + 4, 1, 1);
+        screen.drawBox(j * 4 + 1+xOff, i * 8 + 4, 1, 1);
       } else {
       }
       if (val == 0) {
 
       } else {
-        screen.drawBox(j * 4 + 1, i * 8 + 1, 2, 6);
+        screen.drawBox(j * 4 + 1+xOff, i * 8 + 1, 2, 6);
       }
       if (jp == tracker.trackIndex) {
-        screen.drawBox(j * 4, i * 8, 1, 8);
+        screen.drawBox(j * 4+xOff, i * 8, 1, 8);
       }
       if (cursorX == j && cursorY == i) {
         if (cursorMode == 0) {
-          screen.drawFrame(j * 4, i * 8, 4, 8);
+          screen.drawFrame(j * 4+xOff, i * 8, 4, 8);
         } else {
-          screen.drawBox(j * 4, i * 8, 4, 8);
+          screen.drawBox(j * 4+xOff, i * 8, 4, 8);
         }
       }
     }
