@@ -3,6 +3,7 @@
 #include "Voice.h"
 
 Tracker::Tracker() {
+
   patternLength = 32;
   isPlaying = true;
   bpms[0] = 120;
@@ -225,9 +226,6 @@ void Tracker::SetCommand(char command, int val) {
       if (val > 1) {
         BuildOLEDHintString(String("Instrument: " + String(val)));
         String("INS" + String(val)).toCharArray(oledInstString, 8);
-      } else if (val == 1) {
-        BuildOLEDHintString(String("SFX Bank"));
-        String("SFX").toCharArray(oledInstString, 6);
       } else {
         BuildOLEDHintString(String("Drum Bank"));
         String("DRUM").toCharArray(oledInstString, 6);
@@ -299,9 +297,10 @@ void Tracker::SetEffect(int val) {
   voices[selectedTrack].SetEffectNum(val);
 };
 
-void Tracker::SetBPM(int val) {
+void Tracker::SetBPM(uint8_t val) {
   bpm = bpms[val];
   bps = bpm / 60;
+  bmpChoice = val;
 };
 
 void Tracker::SetDelay(int val) {
@@ -325,7 +324,7 @@ void Tracker::SetVolume(int val) {
   voices[selectedTrack].SetVolume(val);
 };
 
-void Tracker::SetNote(int val, int track) {
+void Tracker::SetNote(uint8_t val, int track) {
 
   //one behind trick
   if (!trackerUI) {

@@ -10,7 +10,7 @@ public:
   void OnNote(int input, Tracker &tracker);
   int cursorMode;
   void MoveCursor(int dir);
-  void UpdateIntro(U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen);
+  void UpdateIntro(U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, Tracker &tracker);
   bool trackerUI;
   bool showIntro;
 private:

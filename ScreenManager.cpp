@@ -41,7 +41,7 @@ ScreenManager::ScreenManager() {
 
 void ScreenManager::Update(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {
   if (showIntro) {
-    UpdateIntro(screen);
+    UpdateIntro(screen, tracker);
     return;
   }
   bool isShowingInstructions = UpdateInstructionsScreen(tracker, screen, ledCommandOLED, volumeBars, noteChars);
@@ -62,7 +62,7 @@ void ScreenManager::Update(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C
   }
 }
 
-void ScreenManager::UpdateIntro(U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen) {
+void ScreenManager::UpdateIntro(U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, Tracker &tracker) {
   screen.setFont(u8g2_font_6x13_tf);
 
   char buf32[22];
@@ -73,6 +73,7 @@ void ScreenManager::UpdateIntro(U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen) {
   s = String("F1=Live F2=Tracker");
   s.toCharArray(buf32, 21);
   screen.drawStr(12, 38, buf32);
+  screen.drawStr(12, 52, tracker.fsState);
 }
 
 bool ScreenManager::UpdateInstructionsScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, char ledCommandOLED, int volumeBars[4], String noteChars[12]) {

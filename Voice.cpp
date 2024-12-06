@@ -18,6 +18,7 @@
 
 
 //instruments
+#include "Samples/instrument0.h"
 #include "Samples/instrument1.h"
 #include "Samples/instrument2.h"
 #include "Samples/instrument3.h"
@@ -162,8 +163,8 @@ int Voice::ReadWaveform() {
 
   switch (vSel) {
     case 1:
-      sampleLen = instrument1Length;
-      sample = instrument1[sampleIndexReduced];
+      sampleLen = instrument0Length;
+      sample = instrument0[sampleIndexReduced];
       break;
     case 2:
       sampleLen = instrument1Length;
