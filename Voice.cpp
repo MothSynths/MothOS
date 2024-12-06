@@ -16,20 +16,6 @@
 #include "Samples/special2.h"
 #include "Samples/special3.h"
 
-//sfx
-
-#include "Samples/sfx1.h"
-#include "Samples/sfx2.h"
-#include "Samples/sfx3.h"
-#include "Samples/sfx4.h"
-#include "Samples/sfx5.h"
-#include "Samples/sfx6.h"
-#include "Samples/sfx7.h"
-#include "Samples/sfx8.h"
-#include "Samples/sfx9.h"
-#include "Samples/sfx10.h"
-#include "Samples/sfx11.h"
-#include "Samples/sfx12.h"
 
 //instruments
 #include "Samples/instrument1.h"
@@ -84,10 +70,8 @@ Voice::Voice() {
 int Voice::UpdateVoice() {
 
   int sample = 0;
-  if (voiceNum > 1 || samplerMode) {
+  if (voiceNum > 0 || samplerMode) {
     sample = ReadWaveform();
-  } else if (voiceNum == 1) {
-    sample = ReadSfxWaveform();
   } else {
     sample = ReadDrumWaveform();
   }
@@ -177,6 +161,10 @@ int Voice::ReadWaveform() {
   }
 
   switch (vSel) {
+    case 1:
+      sampleLen = instrument1Length;
+      sample = instrument1[sampleIndexReduced];
+      break;
     case 2:
       sampleLen = instrument1Length;
       sample = instrument1[sampleIndexReduced];
@@ -347,91 +335,6 @@ int Voice::ReadDrumWaveform() {
       oct = recOctave + 1;
 
     sampleIndex += oct * 500;
-    if (pitchMult > 0) {
-      if (pitchDur > 0) {
-        pitchDur -= pitchMult;
-        if (pitchMult == 1)
-          sampleIndex -= pitchDur / 5;
-        if (pitchMult == 2)
-          sampleIndex += pitchDur / 5;
-      }
-    }
-  }
-  sample = (sample * volume / 3);
-  if (isDelay) {
-    sample /= 3;
-  }
-  return sample;
-}
-
-
-
-int Voice::ReadSfxWaveform() {
-
-  subSampleIndex = sampleIndex / 1000;
-  if (envelopeNum > 1) {
-    subSampleIndex = sampleLen - sampleIndex / 1000 - 1;
-  }
-
-  switch (note) {
-    case 0:
-      sampleLen = sfx1Length;
-      sample = sfx1[subSampleIndex];
-      break;
-    case 1:
-      sampleLen = sfx2Length;
-      sample = sfx2[subSampleIndex];
-      break;
-    case 2:
-      sampleLen = sfx3Length;
-      sample = sfx3[subSampleIndex];
-      break;
-    case 3:
-      sampleLen = sfx4Length;
-      sample = sfx4[subSampleIndex];
-      break;
-    case 4:
-      sampleLen = sfx5Length;
-      sample = sfx5[subSampleIndex];
-      break;
-    case 5:
-      sampleLen = sfx6Length;
-      sample = sfx6[subSampleIndex];
-      break;
-    case 6:
-      sampleLen = sfx7Length;
-      sample = sfx7[subSampleIndex];
-      break;
-    case 7:
-      sampleLen = sfx8Length;
-      sample = sfx8[subSampleIndex];
-      break;
-    case 8:
-      sampleLen = sfx9Length;
-      sample = sfx9[subSampleIndex];
-      break;
-    case 9:
-      sampleLen = sfx10Length;
-      sample = sfx10[subSampleIndex];
-      break;
-    case 10:
-      sampleLen = sfx11Length;
-      sample = sfx11[subSampleIndex];
-      break;
-    case 11:
-      sampleLen = sfx12Length;
-      sample = sfx12[subSampleIndex];
-      break;
-  }
-  if (sampleIndex >= sampleLen * 1000) {
-    sample = 0;
-  } else {
-    int oct = octave + 1;
-    if (recOctave > -1)
-      oct = recOctave + 1;
-
-    sampleIndex += oct * 500;
-
     if (pitchMult > 0) {
       if (pitchDur > 0) {
         pitchDur -= pitchMult;
