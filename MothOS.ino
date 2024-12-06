@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 
+
 //MothSynth led manager init
 #include "LedManager.h"
 LedManager ledManager = LedManager(9, 10, 11, 12);
@@ -40,12 +41,13 @@ const int sampleRate = 44100;  // sample rate in Hz
 #include "ScreenManager.h"
 #include <U8g2lib.h>
 #include <Wire.h>
+#include "FSManager.h"
 
 
 U8G2_SSD1306_128X64_NONAME_1_HW_I2C screen = U8G2_SSD1306_128X64_NONAME_1_HW_I2C(U8G2_R0, /* reset=*/U8X8_PIN_NONE, /* clock=*/47, /* data=*/48);
 ScreenManager screenManager = ScreenManager();
 
-//OLED Helers
+//OLED Helpers
 TaskHandle_t Task2;  //OLED requires second core
 char ledCommandOLED;
 String noteChars[12];
@@ -53,9 +55,19 @@ int volumeBars[4];
 bool trackerUI = true;
 bool debounce;
 bool selectingMode = true;
+int saveCount = 0;
+int loadCount = 0;
+
+//file system
+FSManager fsManager = FSManager(tracker);
+
+
+void SetupFS() {
+}
 
 void setup() {
 
+  fsManager.init(tracker);
 #ifdef ISOLED
   xTaskCreatePinnedToCore(
     Task2Loop,
@@ -109,6 +121,7 @@ void setup() {
 
 
 void loop() {
+
   if (screenManager.cursorMode == 0) {
     inputManager.UpdateInput(keypad.getKey());
     char note = inputManager.note;
@@ -122,6 +135,39 @@ void loop() {
     }
 
     if (trackCommand != ' ') {
+      if (trackCommand == 'P') {
+        saveCount++;
+        if (saveCount == 4) {
+          int saved = fsManager.save(tracker);
+          tracker.BuildOLEDHintString("Saved...");
+
+          if (saved == 0) {
+            tracker.BuildOLEDHintString("Save Failed");
+          }
+          trackCommand = ' ';
+          return;
+        }
+      } else {
+        saveCount = 0;
+      }
+      if (trackCommand == 'T') {
+        loadCount++;
+        if (loadCount == 4) {
+          int loaded = fsManager.load(tracker);
+
+          if (loaded == 0) {
+            tracker.BuildOLEDHintString("Load Fail");
+          } else {
+            tracker.pressedOnce = true;
+            tracker.BuildOLEDHintString("Loaded...");
+           
+          }
+          trackCommand = ' ';
+          return;
+        }
+      } else {
+        loadCount = 0;
+      }
       if (trackCommand == 'N' && trackerUI) {
         screenManager.OnInput(trackCommandArgument, tracker);
       } else {

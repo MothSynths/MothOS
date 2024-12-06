@@ -5,6 +5,7 @@
 
 class Tracker {
 public:
+  char fsState[11];
   int lastNoteTrackIndex;
   int preKEnvNumber;
   int hintTime;
@@ -28,15 +29,22 @@ public:
   char oledInstString[8];
   char oledOctString[6];
   int currentVoice = 0;
-  int tracks[4][512];
-  int trackOctaves[4][512];
+  uint8_t tracks[4][512];
+  uint8_t trackOctaves[4][512];
+  uint8_t trackInstruments[4][512];
   bool solo;
-  void SetNote(int val, int track);
+  void SetNote(uint8_t val, int track);
   bool trackerUI;
   void ClearAll(int val);
+  void BuildOLEDHintString(String string);
+  void SetEnvelopeNum(int val);
+  float bpm;
+  int bmpChoice;
+  void SetBPM(uint8_t val);
+  
 private:
   int lastNoteTrack;
-  float bpm;
+
   float bps;
   float beatTime;
   float noteTime;
@@ -45,15 +53,11 @@ private:
   float soundVelocity;
   void SoloTrack(bool repeat);
   int bpms[4];
-  int trackInstruments[4][512];
   int patternCopy[4][128];
   int patternCopyOctaves[4][128];
   int patternCopyInstruments[4][128];
-  void BuildOLEDHintString(String string);
   void SetEffect(int val);
-  void SetBPM(int val);
   void SetDelay(int val);
-  void SetEnvelopeNum(int val);
   void SetVoice(int val);
   void SetEnvelopeLength(int val);
   void SetOctave(int val);
