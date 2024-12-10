@@ -13,10 +13,10 @@ public:
   void ProcessClick(int input);
   void EndFrame();
   int ConvertToInt(char rawInput);
-
+  void ClearFunctions();
 
 private:
   bool fnc[4];
-  void ClearFunctions();
+
 };
 #endif
