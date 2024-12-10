@@ -66,7 +66,8 @@ void SetupFS() {
 }
 
 void setup() {
-
+  keypad.setHoldTime(1000);
+  keypad.addEventListener(keypadEvent);
   fsManager.init(tracker);
 #ifdef ISOLED
   xTaskCreatePinnedToCore(
@@ -119,6 +120,49 @@ void setup() {
   }
 }
 
+void keypadEvent(KeypadEvent key) {
+  switch (keypad.getState()) {
+    case PRESSED:
+
+      break;
+
+    case RELEASED:
+
+      break;
+
+    case HOLD:
+      if (key == 'O') {
+        int loaded = fsManager.load(tracker);
+
+        if (loaded == 0) {
+          tracker.BuildOLEDHintString("Load Fail");
+        } else {
+          tracker.pressedOnce = true;
+          tracker.BuildOLEDHintString("Loaded...");
+        }
+        inputManager.ledCommand = ' ';
+        ledCommandOLED = ' ';
+        inputManager.trackCommand = ' ';
+        inputManager.ClearFunctions();
+        ledManager.SetCommand('T');
+      }
+      if (key == 'P') {
+        int saved = fsManager.save(tracker);
+        tracker.BuildOLEDHintString("Saved...");
+
+        if (saved == 0) {
+          tracker.BuildOLEDHintString("Save Failed");
+        }
+        inputManager.ledCommand = ' ';
+        ledCommandOLED = ' ';
+        inputManager.trackCommand = ' ';
+        inputManager.ClearFunctions();
+        ledManager.SetCommand('T');
+      }
+
+      break;
+  }
+}
 
 void loop() {
 
@@ -133,41 +177,8 @@ void loop() {
       ledCommandOLED = ledCommand;
       ledManager.SetCommand(ledCommand);
     }
-
     if (trackCommand != ' ') {
-      if (trackCommand == 'P') {
-        saveCount++;
-        if (saveCount == 4) {
-          int saved = fsManager.save(tracker);
-          tracker.BuildOLEDHintString("Saved...");
-
-          if (saved == 0) {
-            tracker.BuildOLEDHintString("Save Failed");
-          }
-          trackCommand = ' ';
-          return;
-        }
-      } else {
-        saveCount = 0;
-      }
-      if (trackCommand == 'T') {
-        loadCount++;
-        if (loadCount == 4) {
-          int loaded = fsManager.load(tracker);
-
-          if (loaded == 0) {
-            tracker.BuildOLEDHintString("Load Fail");
-          } else {
-            tracker.pressedOnce = true;
-            tracker.BuildOLEDHintString("Loaded...");
-           
-          }
-          trackCommand = ' ';
-          return;
-        }
-      } else {
-        loadCount = 0;
-      }
+      
       if (trackCommand == 'N' && trackerUI) {
         screenManager.OnInput(trackCommandArgument, tracker);
       } else {
@@ -176,6 +187,7 @@ void loop() {
     }
     ledManager.UpdateLed();
   } else {
+
     char trackerInput = keypad.getKey();
     if (trackerInput && !debounce) {
       if (trackerInput == 'M') {
