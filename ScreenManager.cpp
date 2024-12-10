@@ -179,9 +179,9 @@ bool ScreenManager::UpdateInstructionsScreen(Tracker &tracker, U8G2_SSD1306_128X
 void ScreenManager::OnNote(int input, Tracker &tracker) {
 
   int patternOffset = tracker.currentPattern * tracker.patternLength;
-  int val = tracker.tracks[cursorY][cursorX];
+  int val = tracker.tracks[cursorY][cursorX + patternOffset];
   if (val > 0) {
-    tracker.tracks[cursorY][cursorX] = 0;
+    tracker.tracks[cursorY][cursorX + patternOffset] = 0;
   } else {
     int oldTrackIndex = tracker.trackIndex;
     tracker.trackIndex = cursorX + patternOffset;
@@ -221,7 +221,7 @@ void ScreenManager::OnInput(int input, Tracker &tracker) {
 
   if (input == 7) {
     int oldTrackIndex = tracker.trackIndex;
-    tracker.tracks[cursorY][cursorX] = 0;
+    tracker.tracks[cursorY][cursorX + patternOffset] = 0;
     tracker.trackIndex = oldTrackIndex;
     return;
   }
