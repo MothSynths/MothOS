@@ -68,26 +68,27 @@ int FSManager::save(Tracker &tracker) {
   written = file.write((uint8_t *)arr, 512 * 4 * sizeof(uint8_t));
   file.close();
 
-  uint8_t arr2[11 * 4];
+  uint8_t arr2[12 * 4];
   file = LittleFS.open("/prf", "w");
   if (!file) {
     return 0;
   }
 
   for (int i = 0; i < 4; i++) {
-    arr2[i * 11 + 0] = (uint8_t)tracker.voices[i].volume;
-    arr2[i * 11 + 1] = (uint8_t)tracker.voices[i].envelopeNum;
-    arr2[i * 11 + 2] = (uint8_t)tracker.voices[i].envelopeLength;
-    arr2[i * 11 + 3] = (uint8_t)tracker.voices[i].phaserMult;
-    arr2[i * 11 + 4] = (uint8_t)tracker.voices[i].lowPassMult;
-    arr2[i * 11 + 5] = (uint8_t)tracker.voices[i].reverbMult;
-    arr2[i * 11 + 6] = (uint8_t)tracker.voices[i].chordMult;
-    arr2[i * 11 + 7] = (uint8_t)tracker.voices[i].pitchMult;
-    arr2[i * 11 + 8] = (uint8_t)tracker.voices[i].delayMult;
-    arr2[i * 11 + 9] = (uint8_t)tracker.voices[i].whooshMult;
-    arr2[i * 11 + 10] = (uint8_t)tracker.bmpChoice;
+    arr2[i * 12 + 0] = (uint8_t)tracker.voices[i].volume;
+    arr2[i * 12 + 1] = (uint8_t)tracker.voices[i].envelopeNum;
+    arr2[i * 12 + 2] = (uint8_t)tracker.voices[i].envelopeLength;
+    arr2[i * 12 + 3] = (uint8_t)tracker.voices[i].phaserMult;
+    arr2[i * 12 + 4] = (uint8_t)tracker.voices[i].lowPassMult;
+    arr2[i * 12 + 5] = (uint8_t)tracker.voices[i].reverbMult;
+    arr2[i * 12 + 6] = (uint8_t)tracker.voices[i].chordMult;
+    arr2[i * 12 + 7] = (uint8_t)tracker.voices[i].pitchMult;
+    arr2[i * 12 + 8] = (uint8_t)tracker.voices[i].delayMult;
+    arr2[i * 12 + 9] = (uint8_t)tracker.voices[i].whooshMult;
+    arr2[i * 12 + 10] = (uint8_t)tracker.bmpChoice;
+    arr2[i * 12 + 11] = (uint8_t)tracker.voices[i].samplerMode;
   }
-  written = file.write((uint8_t *)arr2, 11 * 4 * sizeof(uint8_t));
+  written = file.write((uint8_t *)arr2, 12 * 4 * sizeof(uint8_t));
   file.close();
 
   return written;
@@ -143,25 +144,26 @@ int FSManager::load(Tracker &tracker) {
   file.close();
 
 
-  uint8_t arr2[11 * 4];
+  uint8_t arr2[12 * 4];
   file = LittleFS.open("/prf", "r");
   if (!file) {
     return 0;
   }
 
-  written = file.read((uint8_t *)arr2, 11 * 4 * sizeof(uint8_t));
+  written = file.read((uint8_t *)arr2, 12 * 4 * sizeof(uint8_t));
   for (int i = 0; i < 4; i++) {
-    tracker.voices[i].volume = (uint8_t)arr2[i * 11 + 0];
-    tracker.voices[i].envelopeNum = (uint8_t)arr2[i * 11 + 1];
-    tracker.voices[i].envelopeLength = (uint8_t)arr2[i * 11 + 2];
-    tracker.voices[i].phaserMult = (uint8_t)arr2[i * 11 + 3];
-    tracker.voices[i].lowPassMult = (uint8_t)arr2[i * 11 + 4];
-    tracker.voices[i].reverbMult = (uint8_t)arr2[i * 11 + 5];
-    tracker.voices[i].chordMult = (uint8_t)arr2[i * 11 + 6];
-    tracker.voices[i].pitchMult = (uint8_t)arr2[i * 11 + 7];
-    tracker.voices[i].delayMult = (uint8_t)arr2[i * 11 + 8];
-    tracker.voices[i].whooshMult = (uint8_t)arr2[i * 11 + 9];
-    tracker.SetBPM((uint8_t)arr2[i * 11 + 10]);
+    tracker.voices[i].volume = (uint8_t)arr2[i * 12 + 0];
+    tracker.voices[i].envelopeNum = (uint8_t)arr2[i * 12 + 1];
+    tracker.voices[i].envelopeLength = (uint8_t)arr2[i * 12 + 2];
+    tracker.voices[i].phaserMult = (uint8_t)arr2[i * 12 + 3];
+    tracker.voices[i].lowPassMult = (uint8_t)arr2[i * 12 + 4];
+    tracker.voices[i].reverbMult = (uint8_t)arr2[i * 12 + 5];
+    tracker.voices[i].chordMult = (uint8_t)arr2[i * 12 + 6];
+    tracker.voices[i].pitchMult = (uint8_t)arr2[i * 12 + 7];
+    tracker.voices[i].delayMult = (uint8_t)arr2[i * 12 + 8];
+    tracker.voices[i].whooshMult = (uint8_t)arr2[i * 12 + 9];
+    tracker.voices[i].samplerMode = (uint8_t)arr2[i * 12 + 11];
+    tracker.SetBPM((uint8_t)arr2[i * 12 + 10]);
   
   }
 
