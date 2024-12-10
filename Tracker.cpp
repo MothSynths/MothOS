@@ -222,12 +222,9 @@ void Tracker::SetCommand(char command, int val) {
       break;
     case 'I':
       currentVoice = val;
-      if (val > 1) {
+      if (val > 0) {
         BuildOLEDHintString(String("Instrument: " + String(val)));
         String("INS" + String(val)).toCharArray(oledInstString, 8);
-      } else if (val == 1) {
-        BuildOLEDHintString(String("SFX Bank"));
-        String("SFX").toCharArray(oledInstString, 6);
       } else {
         BuildOLEDHintString(String("Drum Bank"));
         String("DRUM").toCharArray(oledInstString, 6);

@@ -18,6 +18,7 @@
 
 
 //instruments
+#include "Samples/instrument0.h"
 #include "Samples/instrument1.h"
 #include "Samples/instrument2.h"
 #include "Samples/instrument3.h"
@@ -30,7 +31,7 @@
 #include "Samples/instrument10.h"
 #ifndef voiceLength
 #define voiceLength
-const unsigned int voiceLengths[] = { 30001, 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30009, 30010, 30011, 30012 };  //these are keys to vars, not actual lengths
+const unsigned int voiceLengths[] = { 30001, 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30009, 30010, 30011, 30012, 30013 };  //these are keys to vars, not actual lengths
 #endif
 Voice::Voice() {
   for (int i = 0; i < 48; i++) {
@@ -166,55 +167,57 @@ int Voice::ReadWaveform() {
 
   switch (vSel) {
     case 1:
-      sampleLen = instrument1Length;
-      sample = instrument1[sampleIndexReduced];
+      hackIndex = 0;
+      sampleLen = voiceLengths[hackIndex];
+      sample = instrument0[sampleIndexReduced];
       break;
     case 2:
+      hackIndex = 1;
       sampleLen = voiceLengths[hackIndex];
       sample = instrument1[sampleIndexReduced];
       break;
     case 3:
-      hackIndex = 1;
+      hackIndex = 2;
       sampleLen = voiceLengths[hackIndex];
       sample = instrument2[sampleIndexReduced];
       break;
     case 4:
-      hackIndex = 2;
+      hackIndex = 3;
       sampleLen = voiceLengths[hackIndex];
       sample = instrument3[sampleIndexReduced];
       break;
     case 5:
-      hackIndex = 3;
+      hackIndex = 4;
       sampleLen = voiceLengths[hackIndex];
       sample = instrument4[sampleIndexReduced];
       break;
     case 6:
-      hackIndex = 4;
+      hackIndex = 5;
       sampleLen = voiceLengths[hackIndex];
       sample = instrument5[sampleIndexReduced];
       break;
     case 7:
-      hackIndex = 5;
+      hackIndex = 6;
       sampleLen = voiceLengths[hackIndex];
       sample = instrument6[sampleIndexReduced];
       break;
     case 8:
-      hackIndex = 6;
+      hackIndex = 7;
       sampleLen = voiceLengths[hackIndex];
       sample = instrument7[sampleIndexReduced];
       break;
     case 9:
-      hackIndex = 7;
+      hackIndex = 8;
       sampleLen = voiceLengths[hackIndex];
       sample = instrument8[sampleIndexReduced];
       break;
     case 10:
-      hackIndex = 8;
+      hackIndex = 9;
       sampleLen = voiceLengths[hackIndex];
       sample = instrument9[sampleIndexReduced];
       break;
     case 11:
-      hackIndex = 9;
+      hackIndex = 10;
       sampleLen = voiceLengths[hackIndex];
       sample = instrument10[sampleIndexReduced];
       break;
