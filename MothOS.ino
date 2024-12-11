@@ -135,7 +135,11 @@ void keypadEvent(KeypadEvent key) {
         trackerUI = !trackerUI;
         tracker.trackerUI = trackerUI;
         screenManager.trackerUI =trackerUI;
-
+        inputManager.ledCommand = ' ';
+        ledCommandOLED = ' ';
+        inputManager.trackCommand = ' ';
+        inputManager.ClearFunctions();
+        ledManager.SetCommand('T');
       }
       if (key == 'O') {
         int loaded = fsManager.load(tracker);
