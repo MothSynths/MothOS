@@ -138,6 +138,16 @@ void keypadEvent(KeypadEvent key) {
       break;
 
     case HOLD:
+      if (key == 'M') {
+        trackerUI = !trackerUI;
+        tracker.trackerUI = trackerUI;
+        screenManager.trackerUI =trackerUI;
+        inputManager.ledCommand = ' ';
+        ledCommandOLED = ' ';
+        inputManager.trackCommand = ' ';
+        inputManager.ClearFunctions();
+        ledManager.SetCommand('T');
+      }
       if (key == 'O') {
         int loaded = fsManager.load(tracker);
 
