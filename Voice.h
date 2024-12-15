@@ -31,6 +31,7 @@ public:
   int volume;
   bool soloMute;
   bool mute;
+  int srMultiplier;
 
 private:
   int noteFreqLookup[48];

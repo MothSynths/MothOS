@@ -34,6 +34,8 @@
 const unsigned int voiceLengths[] = { 30001, 30002, 30003, 30004, 30005, 30006, 30007, 30008, 30009, 30010, 30011, 30012, 30013 };  //these are keys to vars, not actual lengths
 #endif
 Voice::Voice() {
+  srMultiplier = 1;
+
   for (int i = 0; i < 48; i++) {
     int valOut = (int)(250 * pow(((i + 12) / 12.0), 2));
     noteFreqLookup[i] = valOut;
@@ -159,7 +161,7 @@ int Voice::ReadWaveform() {
     if (recOctave > -1)
       oct = recOctave + 1;
 
-    baseFreqLocal = oct * 500;
+    baseFreqLocal = oct * 500 * srMultiplier;
     if (vSel < 2) {
       return 0;
     }
@@ -261,7 +263,7 @@ int Voice::ReadWaveform() {
     }
   }
 
-  sampleIndex += baseFreqLocal*2;
+  sampleIndex += baseFreqLocal * srMultiplier;
 
   if (sampleIndex >= sampleLen * 1000) {
 
@@ -338,7 +340,7 @@ int Voice::ReadDrumWaveform() {
     if (recOctave > -1)
       oct = recOctave + 1;
 
-    sampleIndex += oct * 1000;
+    sampleIndex += oct * 500 * srMultiplier;
     if (pitchMult > 0) {
       if (pitchDur > 0) {
         pitchDur -= pitchMult;
@@ -497,7 +499,7 @@ void Voice::ResetEffects() {
 }
 
 void Voice::UpdateHistory(int sample) {
-  sampleHistory[sampleHistoryIndex ] = sample;
+  sampleHistory[sampleHistoryIndex] = sample;
   sampleHistoryIndex++;
   if (sampleHistoryIndex > 12000 - 2) {
     sampleHistoryIndex = 0;
