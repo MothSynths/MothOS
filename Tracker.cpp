@@ -21,6 +21,12 @@ Tracker::Tracker() {
   ClearAll(0);
 }
 
+void Tracker::SetMidiMode() {
+  for (int i = 0; i < 4; i++) {
+    voices[i].srMultiplier = 2;
+  }
+}
+
 void Tracker::OnMidiTick() {
   midiTicks++;
   if (midiTicks >= 6) {
@@ -30,8 +36,7 @@ void Tracker::OnMidiTick() {
   }
 }
 
-void Tracker::OnMidiStart()
-{
+void Tracker::OnMidiStart() {
   trackIndex = 0;
   currentPattern = 0;
 }

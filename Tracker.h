@@ -46,6 +46,7 @@ public:
   float bpm;
   int bmpChoice;
   void SetBPM(uint8_t val);
+  void SetMidiMode();
   
 private:
   int lastNoteTrack;

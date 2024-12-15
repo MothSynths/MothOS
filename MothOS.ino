@@ -41,7 +41,7 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 //i2s sound
 #include <ESP_I2S.h>
 I2SClass i2s;
-const int sampleRate = 22050;  // sample rate in Hz
+int sampleRate = 22050;  // sample rate in Hz
 
 //OLED init
 #include "ScreenManager.h"
@@ -64,6 +64,7 @@ bool debounce;
 bool selectingMode = true;
 int saveCount = 0;
 int loadCount = 0;
+bool midiMode = false;
 
 //file system
 FSManager fsManager = FSManager(tracker);
@@ -89,13 +90,17 @@ void setup() {
   screen.begin();
   while (selectingMode) {
     char trackerInput = keypad.getKey();
+    trackerUI = false;
+
     if (trackerInput == 'M') {
-      trackerUI = false;
       selectingMode = false;
+      sampleRate = 44100;
     }
     if (trackerInput == 'N') {
-      trackerUI = true;
       selectingMode = false;
+      sampleRate = 22050;
+      midiMode = true;
+      tracker.SetMidiMode();
     }
     delay(1);
   }
@@ -125,6 +130,22 @@ void setup() {
   if (!i2s.begin(I2S_MODE_STD, sampleRate, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO)) {
     while (1) {};
   }
+
+  if (midiMode) {
+    Serial2.begin(31250, SERIAL_8N1, RX_PIN, TX_PIN);
+    // Set up the MIDI library with Serial2 as the input interface
+    MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to all channels
+    MIDI.setHandleClock(handleClock);
+    MIDI.setHandleStart(handleStart);
+  }
+}
+
+void handleClock() {
+  tracker.OnMidiTick();
+}
+
+void handleStart() {
+  tracker.OnMidiStart();
 }
 
 void keypadEvent(KeypadEvent key) {
@@ -141,7 +162,7 @@ void keypadEvent(KeypadEvent key) {
       if (key == 'M') {
         trackerUI = !trackerUI;
         tracker.trackerUI = trackerUI;
-        screenManager.trackerUI =trackerUI;
+        screenManager.trackerUI = trackerUI;
         inputManager.ledCommand = ' ';
         ledCommandOLED = ' ';
         inputManager.trackCommand = ' ';
@@ -182,7 +203,9 @@ void keypadEvent(KeypadEvent key) {
 }
 
 void loop() {
-
+  if (midiMode) {
+    MIDI.read();
+  }
   if (screenManager.cursorMode == 0) {
     inputManager.UpdateInput(keypad.getKey());
     char note = inputManager.note;
@@ -195,7 +218,7 @@ void loop() {
       ledManager.SetCommand(ledCommand);
     }
     if (trackCommand != ' ') {
-      
+
       if (trackCommand == 'N' && trackerUI) {
         screenManager.OnInput(trackCommandArgument, tracker);
       } else {
@@ -233,7 +256,7 @@ void loop() {
   // New i2s only wants to write bytes out, so we need to split the sample before writing
   // Copy the high and low bytes of our 16bit sample into a buffer and write that
   byte outbuf[2];
-  int outVol = (tracker.sample + (lastVol / 2)) ;
+  int outVol = (tracker.sample + (lastVol / 2));
   lastVol = tracker.sample;
   outbuf[0] = lowByte(outVol);
   outbuf[1] = highByte(outVol);
