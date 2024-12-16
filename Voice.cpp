@@ -161,7 +161,7 @@ int Voice::ReadWaveform() {
     if (recOctave > -1)
       oct = recOctave + 1;
 
-    baseFreqLocal = oct * 500 * srMultiplier;
+    baseFreqLocal = oct * 500 ;
     if (vSel < 2) {
       return 0;
     }
