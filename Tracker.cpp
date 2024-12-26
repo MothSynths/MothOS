@@ -50,12 +50,10 @@ int Tracker::UpdateTracker() {
 
   float dbps = delta * bps;
 
-  if (trackerUI) {
-    if (isPlaying)
-      noteTime += dbps;
-  } else {
+
+  if (isPlaying)
     noteTime += dbps;
-  }
+
 
   if ((!midiClock && noteTime > 250) || (midiClock && onMidiTick)) {
     onMidiTick = false;

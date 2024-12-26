@@ -218,7 +218,6 @@ void loop() {
       ledManager.SetCommand(ledCommand);
     }
     if (trackCommand != ' ') {
-
       if (trackCommand == 'N' && trackerUI) {
         screenManager.OnInput(trackCommandArgument, tracker);
       } else {
