@@ -5,6 +5,7 @@
 
 class Tracker {
 public:
+  bool playThrough;
   char fsState[11];
   int lastNoteTrackIndex;
   int preKEnvNumber;

@@ -169,6 +169,19 @@ void keypadEvent(KeypadEvent key) {
         inputManager.ClearFunctions();
         ledManager.SetCommand('T');
       }
+      if (key == 'N') {
+        tracker.playThrough = !tracker.playThrough;
+        if (!tracker.playThrough) {
+          tracker.BuildOLEDHintString("Rec On");
+        } else {
+          tracker.BuildOLEDHintString("Rec Off");
+        }
+        inputManager.ledCommand = ' ';
+        ledCommandOLED = ' ';
+        inputManager.trackCommand = ' ';
+        inputManager.ClearFunctions();
+        ledManager.SetCommand('T');
+      }
       if (key == 'O') {
         int loaded = fsManager.load(tracker);
 
@@ -177,6 +190,7 @@ void keypadEvent(KeypadEvent key) {
         } else {
           tracker.pressedOnce = true;
           tracker.BuildOLEDHintString("Loaded...");
+          tracker.isPlaying = true;
         }
         inputManager.ledCommand = ' ';
         ledCommandOLED = ' ';

@@ -347,7 +347,7 @@ void Tracker::SetNote(uint8_t val, int track) {
 
   //one behind trick
   if (!trackerUI) {
-    if (isPlaying) {
+    if (!playThrough) {
       tracks[track][trackIndex] = val + 1;
       trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
       trackInstruments[track][trackIndex] = currentVoice;
