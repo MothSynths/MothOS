@@ -347,7 +347,7 @@ void Tracker::SetNote(uint8_t val, int track) {
 
   //one behind trick
   if (!trackerUI) {
-    if (!playThrough) {
+    if (!playThrough && pressedOnce) {
       tracks[track][trackIndex] = val + 1;
       trackOctaves[track][trackIndex] = voices[selectedTrack].octave;
       trackInstruments[track][trackIndex] = currentVoice;
@@ -443,7 +443,7 @@ void Tracker::PastePatternAll() {
 void Tracker::ClearAll(int val) {
   selectedTrack = 0;
   currentPattern = 0;
-  isPlaying = trackerUI;
+  isPlaying = !trackerUI;
   pressedOnce = false;
   allPatternPlay = false;
   currentVoice = 0;
