@@ -64,7 +64,7 @@ Voice::Voice() {
     if (i > 95) {
       //fade out envs
       envelopes[0][i] /= 1 + ((i - 95) * 20);
-      envelopes[1][i] /= 1 + ((i - 95) * 20);
+      envelopes[2][i] /= 1 + ((i - 95) * 20);
     }
   }
 }
