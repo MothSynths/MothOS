@@ -68,15 +68,23 @@ void ScreenManager::UpdateIntro(U8G2_SSD1306_128X64_NONAME_1_HW_I2C &screen, Tra
   char buf32[22];
   String s = String("MothOS 1.1.0");
   s.toCharArray(buf32, 21);
-  screen.drawStr(26, 22, buf32);
+  screen.drawStr(26, 10, buf32);
 
   s = String("F1=HQ, No Midi");
   s.toCharArray(buf32, 21);
-  screen.drawStr(12, 38, buf32);
+  screen.drawStr(12, 22, buf32);
 
    s = String("F2=NQ, Midi Clk");
   s.toCharArray(buf32, 21);
-  screen.drawStr(12, 52, buf32);
+  screen.drawStr(12, 36, buf32);
+
+  s = String("MothSynth.com");
+  s.toCharArray(buf32, 21);
+  screen.drawStr(12, 48, buf32);
+
+  s = String("for instructions");
+  s.toCharArray(buf32, 21);
+  screen.drawStr(12, 60, buf32);
  // screen.drawStr(12, 52, tracker.fsState);
   
  
