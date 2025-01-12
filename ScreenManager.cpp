@@ -292,7 +292,7 @@ void ScreenManager::UpdateMainScreen(Tracker &tracker, U8G2_SSD1306_128X64_NONAM
   screen.drawStr(95 + xOff2, 44, buf);
   s = String("D:Place, A,B,C,E=CUR");
   if (cursorMode == 0) {
-    s = String("D:Place, A,B,C,E=CUR");
+    s = String("D:Plc, C,C#,D,F=CUR");
   } else {
     s = String("F1:Ex F2:< F3:> F4:O");
   }
