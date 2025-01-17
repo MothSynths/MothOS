@@ -137,6 +137,32 @@ void setup() {
     MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to all channels
     MIDI.setHandleClock(handleClock);
     MIDI.setHandleStart(handleStart);
+    MIDI.setHandleNoteOn(handleNoteOn);
+  }
+}
+
+int noteMidi = -1;
+int octMidi = 0;
+
+void handleNoteOn(byte channel, byte note, byte velocity) {
+  if (noteMidi == -1) {
+    int n = (int)(note % 12);
+    if (n<1)
+    {
+      n=1;
+    }
+    if (n>13){
+      n=13;
+    }
+    int o = (int)(note / 12) - 5;
+    if (o < 0) {
+      o = 0;
+    }
+    if (o > 2) {
+      o = 2;
+    }
+    noteMidi = n;
+    octMidi = o;
   }
 }
 
@@ -227,17 +253,26 @@ void loop() {
     int trackCommandArgument = inputManager.trackCommandArgument;
     char ledCommand = inputManager.ledCommand;
 
+    if (noteMidi > -1) {
+      note = noteMidi;
+      trackCommand = 'N';
+      trackCommandArgument = note;
+      tracker.voices[tracker.selectedTrack].SetOctave(octMidi);
+      noteMidi = -1;
+    }
     if (ledCommand != ' ') {
       ledCommandOLED = ledCommand;
       ledManager.SetCommand(ledCommand);
     }
     if (trackCommand != ' ') {
+
       if (trackCommand == 'N' && trackerUI) {
         screenManager.OnInput(trackCommandArgument, tracker);
       } else {
         tracker.SetCommand(trackCommand, trackCommandArgument);
       }
     }
+
     ledManager.UpdateLed();
   } else {
 
