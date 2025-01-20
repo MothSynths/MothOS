@@ -94,12 +94,12 @@ int Voice::UpdateVoice() {
         phaserDir = 1;
       }
     }
-    int rSample = GetHistorySample(phaserOffset);
+    int rSample = GetHistorySample(phaserOffset/srMultiplier);
     sample = (sample + rSample) / 2;
   }
 
   if (delayMult > 0) {
-    sample += GetHistorySample(delayMult * 11600 / bps) / 5;
+    sample += GetHistorySample(delayMult * 11600 / bps/srMultiplier) / 5;
   }
 
   if (whooshMult > 0) {
@@ -109,14 +109,14 @@ int Voice::UpdateVoice() {
       whooshOffset = 0;
     int whoosh = whooshSin[whooshOffset / 150] + 1;
     for (int i = 0; i < whoosh; i++) {
-      sample += GetHistorySample(i + 1);
+      sample += GetHistorySample((i + 1)/srMultiplier);
     }
     sample /= whoosh + 1;
   }
 
   if (lowPassMult > 0) {
     for (int i = 1; i < 4 * lowPassMult; i++) {
-      sample += GetHistorySample(i);
+      sample += GetHistorySample(i/srMultiplier);
     }
     sample /= 4 * lowPassMult;
   }
@@ -126,7 +126,7 @@ int Voice::UpdateVoice() {
   if (reverbMult > 0) {
     int rSample = 0;
     for (int i = 2; i < 7; i++) {
-      rSample += GetHistorySample(i * 450 * reverbMult);
+      rSample += GetHistorySample((i * 450 * reverbMult)/srMultiplier);
     }
     sample = rSample / 2;
   }

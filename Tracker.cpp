@@ -55,7 +55,7 @@ int Tracker::UpdateTracker() {
     noteTime += dbps;
 
 
-  if ((!midiClock && noteTime > 250) || (midiClock && onMidiTick)) {
+  if ((!useMidiClock && noteTime > 250) || (!midiClock && noteTime > 250) || (midiClock && onMidiTick)) {
     onMidiTick = false;
     barCount++;
     if (barCount > 3) {

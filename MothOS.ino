@@ -100,6 +100,16 @@ void setup() {
       selectingMode = false;
       sampleRate = 22050;
       midiMode = true;
+      tracker.midiClock = true;
+      tracker.useMidiClock=true;
+      tracker.SetMidiMode();
+    }
+    if (trackerInput == 'O') {
+      selectingMode = false;
+      sampleRate = 22050;
+      midiMode = true;
+      tracker.midiClock = true;
+      tracker.useMidiClock=false;
       tracker.SetMidiMode();
     }
     delay(1);
@@ -147,14 +157,13 @@ int octMidi = 0;
 void handleNoteOn(byte channel, byte note, byte velocity) {
   if (noteMidi == -1) {
     int n = (int)(note % 12);
-    if (n<1)
-    {
-      n=1;
+    if (n < 0) {
+      n = 0;
     }
-    if (n>13){
-      n=13;
+    if (n > 12) {
+      n = 12;
     }
-    int o = (int)(note / 12) - 5;
+    int o = (int)(note / 12) - 3;
     if (o < 0) {
       o = 0;
     }
@@ -167,11 +176,13 @@ void handleNoteOn(byte channel, byte note, byte velocity) {
 }
 
 void handleClock() {
-  tracker.OnMidiTick();
+  if (tracker.useMidiClock)
+    tracker.OnMidiTick();
 }
 
 void handleStart() {
-  tracker.OnMidiStart();
+  if (tracker.useMidiClock)
+    tracker.OnMidiStart();
 }
 
 void keypadEvent(KeypadEvent key) {
@@ -185,6 +196,16 @@ void keypadEvent(KeypadEvent key) {
       break;
 
     case HOLD:
+      if (key == 'L') {
+        trackerUI = !trackerUI;
+        tracker.trackerUI = trackerUI;
+        screenManager.trackerUI = trackerUI;
+        inputManager.ledCommand = ' ';
+        ledCommandOLED = ' ';
+        inputManager.trackCommand = ' ';
+        inputManager.ClearFunctions();
+        ledManager.SetCommand('T');
+      }
       if (key == 'M') {
         trackerUI = !trackerUI;
         tracker.trackerUI = trackerUI;
