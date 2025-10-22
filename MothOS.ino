@@ -27,8 +27,8 @@ char keys[ROWS][COLS] = {
   { 'A', 'B', 'C', 'D' }
 };
 
-byte rowPins[ROWS] = { 4, 3, 8, 15 };
-byte colPins[COLS] = { 16, 17, 18, 13 };
+byte rowPins[ROWS] = { 15,16,17,18 };
+byte colPins[COLS] = { 7,6,5,4 };
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 //i2s sound
@@ -78,7 +78,7 @@ void setup() {
   #endif
   keypad.setDebounceTime(0);
 
-  i2s.setPins(6, 7, 5);
+  i2s.setPins(12, 13, 11);
   if (!i2s.begin(I2S_MODE_STD, sampleRate, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO)) {
     while (1) {};
   }
